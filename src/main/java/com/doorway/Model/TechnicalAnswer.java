@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "technical_anwsers")
+@Table(name = "technical_answers")
 public class TechnicalAnswer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

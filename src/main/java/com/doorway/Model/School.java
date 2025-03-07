@@ -3,6 +3,7 @@ package com.doorway.Model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -17,8 +18,10 @@ public class School {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String name;
 
     @OneToMany(mappedBy = "school")
-    private List<Interviewee> interviewees;
+    @Builder.Default
+    private List<Interviewee> interviewees = Collections.emptyList();
 }

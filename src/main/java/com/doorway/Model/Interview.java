@@ -26,7 +26,7 @@ public class Interview {
     private Date scheduledAt;
 
     @ManyToOne
-    private Interviewee interviewee;
+    private Interviewer interviewer;
 
     @ManyToOne
     private InterviewingProcess interviewingProcess;

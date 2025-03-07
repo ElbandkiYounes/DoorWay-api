@@ -1,6 +1,6 @@
 package com.doorway.Model;
 
-public enum ExcelencePrinciple {
+public enum ExcellencePrinciple {
     IMPACTFUL_DELIVERY,
     WISE_INSIGHTS,
     SIMPLIFIED_INNOVATION,
