@@ -14,10 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -146,14 +143,14 @@ public class InterviewerServiceImplTest {
 
     @Test
     void getAllInterviewers_Success() {
-        List<Interviewer> interviewers = Arrays.asList(interviewer);
+        List<Interviewer> interviewers = Collections.singletonList(interviewer);
         when(interviewerRepository.findAll()).thenReturn(interviewers);
 
         List<Interviewer> result = interviewerService.getAllInterviewers();
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(interviewer.getName(), result.get(0).getName());
+        assertEquals(interviewer.getName(), result.getFirst().getName());
 
         verify(interviewerRepository, times(1)).findAll();
     }
