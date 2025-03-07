@@ -5,7 +5,7 @@ import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.Interviewer;
 import com.doorway.Payload.InterviewerPayload;
 import com.doorway.Repository.InterviewerRepository;
-import com.doorway.Service.Inteface.InterviewerService;
+import com.doorway.Service.InterviewerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +34,7 @@ public class InterviewerServiceImplTest {
     private MultipartFile image;
 
     @InjectMocks
-    private InterviewerService interviewerService;
+    private InterviewerServiceImpl interviewerService;
 
     private InterviewerPayload payload;
     private Interviewer interviewer;
