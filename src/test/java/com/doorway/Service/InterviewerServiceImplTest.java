@@ -156,7 +156,7 @@ public class InterviewerServiceImplTest {
     }
 
     @Test
-    void updateInterviewer_Success() throws IOException {
+    void updateInterviewer_Success(){
         UUID id = UUID.randomUUID();
         when(interviewerRepository.findById(id)).thenReturn(Optional.of(interviewer));
         when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
