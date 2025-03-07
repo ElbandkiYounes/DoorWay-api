@@ -59,7 +59,7 @@ public class InterviewerServiceImplTest {
     }
 
     @Test
-    void createInterviewer_Success() throws IOException {
+    void createInterviewer_Success(){
         // Mock image validation
         when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
         when(image.getContentType()).thenReturn("image/jpeg");

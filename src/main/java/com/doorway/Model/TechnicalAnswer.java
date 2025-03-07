@@ -1,7 +1,6 @@
 package com.doorway.Model;
 
 import jakarta.persistence.*;
-import jakarta.websocket.server.ServerEndpoint;
 import lombok.*;
 
 @Entity
