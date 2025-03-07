@@ -1,4 +1,4 @@
-package com.doorway.Service.Inteface;
+package com.doorway.Service.Interface;
 
 import com.doorway.Model.Interviewer;
 import com.doorway.Payload.InterviewerPayload;

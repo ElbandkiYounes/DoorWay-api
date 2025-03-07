@@ -5,7 +5,7 @@ import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.Interviewer;
 import com.doorway.Payload.InterviewerPayload;
 import com.doorway.Repository.InterviewerRepository;
-import com.doorway.Service.Inteface.InterviewerService;
+import com.doorway.Service.Interface.InterviewerService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

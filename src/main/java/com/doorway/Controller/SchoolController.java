@@ -2,7 +2,7 @@ package com.doorway.Controller;
 
 import com.doorway.Model.School;
 import com.doorway.Payload.SchoolPayload;
-import com.doorway.Service.Inteface.SchoolService;
+import com.doorway.Service.Interface.SchoolService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

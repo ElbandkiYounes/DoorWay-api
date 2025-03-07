@@ -16,5 +16,6 @@ public class PrincipleQuestion {
     private Long id;
 
     private String question;
+
     private ExcellencePrinciple principle;
 }

@@ -2,7 +2,7 @@ package com.doorway.Controller;
 
 import com.doorway.Model.Interviewer;
 import com.doorway.Payload.InterviewerPayload;
-import com.doorway.Service.Inteface.InterviewerService;
+import com.doorway.Service.Interface.InterviewerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

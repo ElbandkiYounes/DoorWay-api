@@ -5,7 +5,7 @@ import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.School;
 import com.doorway.Payload.SchoolPayload;
 import com.doorway.Repository.SchoolRepository;
-import com.doorway.Service.Inteface.SchoolService;
+import com.doorway.Service.Interface.SchoolService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public class SchoolServiceImpl implements SchoolService {
         if (schoolRepository.findByName(schoolPayload.getName()) != null && !school.getName().equals(schoolPayload.getName())) {
             throw new ConflictException("School already exists");
         }
-        return schoolRepository.save(schoolPayload.fromEntity(school));
+        return schoolRepository.save(schoolPayload.toEntity(school));
     }
 
     //Delete School

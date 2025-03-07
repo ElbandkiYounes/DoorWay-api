@@ -1,4 +1,4 @@
-package com.doorway.Service;
+package com.doorway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

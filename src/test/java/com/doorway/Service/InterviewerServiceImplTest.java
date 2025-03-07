@@ -1,11 +1,10 @@
-package com.doorway;
+package com.doorway.Service;
 
 import com.doorway.Exception.ImageException;
 import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.Interviewer;
 import com.doorway.Payload.InterviewerPayload;
 import com.doorway.Repository.InterviewerRepository;
-import com.doorway.Service.InterviewerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

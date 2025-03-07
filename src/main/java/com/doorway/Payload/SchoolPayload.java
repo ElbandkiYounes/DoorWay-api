@@ -23,7 +23,7 @@ public class SchoolPayload {
                 .build();
     }
 
-    public School fromEntity(School school) {
+    public School toEntity(School school) {
         school.setName(name);
         return school;
     }
