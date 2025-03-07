@@ -1,9 +1,12 @@
 package com.doorway.Payload;
 
 import com.doorway.Model.Interviewer;
-import com.doorway.Util.Base64Util;
+
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Getter
 @Setter
@@ -27,26 +30,27 @@ public class InterviewerPayload {
     @NotBlank(message = "Role is mandatory")
     private String role;
 
-    private String profilePicture;
 
-    public Interviewer toEntity() {
-        return Interviewer.builder()
+
+    public Interviewer toEntity(MultipartFile image) throws IOException {
+         Interviewer interviewer = Interviewer.builder()
                 .name(name)
                 .email(email)
                 .phoneNumber(phoneNumber)
                 .password(password)
                 .role(role)
-                .profilePicture(Base64Util.decode(profilePicture))
                 .build();
+        if (image != null){interviewer.setProfilePicture(image.getBytes());}
+         return interviewer;
     }
 
-    public Interviewer toEntity(Interviewer interviewer) {
+    public Interviewer toEntity(Interviewer interviewer, MultipartFile image) throws IOException {
         interviewer.setName(name);
         interviewer.setEmail(email);
         interviewer.setPhoneNumber(phoneNumber);
         interviewer.setPassword(password);
+        if (image != null){interviewer.setProfilePicture(image.getBytes());}
         interviewer.setRole(role);
-        interviewer.setProfilePicture(Base64Util.decode(profilePicture));
         return interviewer;
     }
 }

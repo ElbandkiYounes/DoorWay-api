@@ -2,17 +2,20 @@ package com.doorway.Controller;
 
 import com.doorway.Model.Interviewer;
 import com.doorway.Payload.InterviewerPayload;
-import com.doorway.Service.InterviewerService;
+import com.doorway.Service.Inteface.InterviewerService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/interviewers")
+@Validated // Enable validation for this controller
 public class InterviewerController {
 
     private final InterviewerService interviewerService;
@@ -23,8 +26,10 @@ public class InterviewerController {
     }
 
     @PostMapping
-    public ResponseEntity<Interviewer> createInterviewer(@RequestBody InterviewerPayload payload) throws IOException {
-        Interviewer interviewer = interviewerService.createInterviewer(payload);
+    public ResponseEntity<Interviewer> createInterviewer(
+            @Valid @RequestPart("payload") InterviewerPayload payload, // Ensure @Valid is applied
+            @RequestPart("image") MultipartFile image) {
+        Interviewer interviewer = interviewerService.createInterviewer(payload, image);
         return ResponseEntity.ok(interviewer);
     }
 
@@ -34,15 +39,24 @@ public class InterviewerController {
         return ResponseEntity.ok(interviewer);
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<Interviewer>> getAllInterviewers() {
         List<Interviewer> interviewers = interviewerService.getAllInterviewers();
         return ResponseEntity.ok(interviewers);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Interviewer> updateInterviewer(@PathVariable UUID id, @RequestBody InterviewerPayload payload) throws IOException {
-        Interviewer interviewer = interviewerService.updateInterviewer(id, payload);
+    public ResponseEntity<Interviewer> updateInterviewer(
+            @PathVariable UUID id,
+            @Valid @RequestPart("payload") InterviewerPayload payload, // Ensure @Valid is applied
+            @RequestPart("image") MultipartFile image) {
+        Interviewer interviewer = interviewerService.updateInterviewer(id, payload, image);
         return ResponseEntity.ok(interviewer);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteInterviewer(@PathVariable UUID id) {
+        interviewerService.deleteInterviewer(id);
+        return ResponseEntity.noContent().build();
     }
 }

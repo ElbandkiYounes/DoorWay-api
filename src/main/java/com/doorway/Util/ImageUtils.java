@@ -2,6 +2,7 @@ package com.doorway.Util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -42,5 +43,15 @@ public class ImageUtils {
         outputStream.close();
 
         return outputStream.toByteArray();
+    }
+
+    // Encode byte array to Base64 string
+    public static String encode(byte[] data) {
+        return Base64.getEncoder().encodeToString(data);
+    }
+
+    // Decode Base64 string to byte array
+    public static byte[] decode(String base64String) {
+        return Base64.getDecoder().decode(base64String);
     }
 }
