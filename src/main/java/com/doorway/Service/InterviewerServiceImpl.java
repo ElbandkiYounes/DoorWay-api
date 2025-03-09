@@ -1,6 +1,6 @@
 package com.doorway.Service;
 
-import com.doorway.Exception.ImageException;
+import com.doorway.Exception.FileException;
 import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.Interviewer;
 import com.doorway.Payload.InterviewerPayload;
@@ -25,55 +25,62 @@ public class InterviewerServiceImpl implements InterviewerService {
         this.interviewerRepository = interviewerRepository;
     }
 
+    //Create Interviewer
     public Interviewer createInterviewer(InterviewerPayload payload, MultipartFile image){
         // Validate image size
         if (image.getSize() > MAX_FILE_SIZE) {
-            throw new ImageException("Image size exceeds the maximum allowed size of 5MB.");
+            throw new FileException("Image size exceeds the maximum allowed size of 5MB.");
         }
 
         // Validate image type
         if (!ALLOWED_FILE_TYPES.contains(image.getContentType())) {
-            throw new ImageException("Only JPEG and PNG images are allowed.");
+            throw new FileException("Only JPEG and PNG images are allowed.");
         }
 
         try {
             Interviewer interviewer = payload.toEntity(image);
             return interviewerRepository.save(interviewer);
         } catch (IOException e) {
-            throw new ImageException("Failed to process the image: " + e.getMessage());
+            throw new FileException("Failed to process the image: " + e.getMessage());
         }
     }
 
+
+    //Get Interviewer by ID
     public Interviewer getInterviewerById(UUID id){
         return interviewerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Interviewer not found with ID: " + id));
     }
 
+    //Get all Interviewers
     public List<Interviewer> getAllInterviewers() {
         return interviewerRepository.findAll();
     }
 
+
+    //Update Interviewer
     public Interviewer updateInterviewer(UUID id, InterviewerPayload payload, MultipartFile image){
         // Validate image size
         if (image.getSize() > MAX_FILE_SIZE) {
-            throw new ImageException("Image size exceeds the maximum allowed size of 5MB.");
+            throw new FileException("Image size exceeds the maximum allowed size of 5MB.");
         }
 
         // Validate image type
         if (!ALLOWED_FILE_TYPES.contains(image.getContentType())) {
-            throw new ImageException("Only JPEG and PNG images are allowed.");
+            throw new FileException("Only JPEG and PNG images are allowed.");
         }
 
         try {
-            Interviewer interviewer = interviewerRepository.findById(id)
-                    .orElseThrow(() -> new NotFoundException("Interviewer not found with ID: " + id));
+            Interviewer interviewer = getInterviewerById(id);
             interviewer = payload.toEntity(interviewer, image);
             return interviewerRepository.save(interviewer);
         } catch (IOException e) {
-            throw new ImageException("Failed to process the image: " + e.getMessage());
+            throw new FileException("Failed to process the image: " + e.getMessage());
         }
     }
 
+
+    //Delete Interviewer
     public void deleteInterviewer(UUID id){
         interviewerRepository.deleteById(id);
     }

@@ -1,5 +1,6 @@
 package com.doorway.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,7 @@ public class School {
     @Column(unique = true)
     private String name;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "school")
     @Builder.Default
     private List<Interviewee> interviewees = Collections.emptyList();

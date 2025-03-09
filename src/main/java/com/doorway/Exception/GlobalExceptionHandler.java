@@ -47,12 +47,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ImageException.class)
-    public ResponseEntity<Map<String, Object>> handleImageException(ImageException ex) {
+    @ExceptionHandler(FileException.class)
+    public ResponseEntity<Map<String, Object>> handleImageException(FileException ex) {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("timestamp", LocalDateTime.now());
         errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
-        errorResponse.put("error", "Image Error");
+        errorResponse.put("error", "File Error");
         errorResponse.put("message", ex.getMessage());
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);

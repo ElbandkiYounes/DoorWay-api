@@ -1,6 +1,6 @@
 package com.doorway.Service;
 
-import com.doorway.Exception.ImageException;
+import com.doorway.Exception.FileException;
 import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.Interviewer;
 import com.doorway.Payload.InterviewerPayload;
@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -81,7 +80,7 @@ public class InterviewerServiceImplTest {
         when(image.getSize()).thenReturn(6 * 1024 * 1024L); // 6MB
 
         // Call the method and expect an exception
-        ImageException exception = assertThrows(ImageException.class, () -> {
+        FileException exception = assertThrows(FileException.class, () -> {
             interviewerService.createInterviewer(payload, image);
         });
 
@@ -99,7 +98,7 @@ public class InterviewerServiceImplTest {
         when(image.getContentType()).thenReturn("image/gif");
 
         // Call the method and expect an exception
-        ImageException exception = assertThrows(ImageException.class, () -> {
+        FileException exception = assertThrows(FileException.class, () -> {
             interviewerService.createInterviewer(payload, image);
         });
 
