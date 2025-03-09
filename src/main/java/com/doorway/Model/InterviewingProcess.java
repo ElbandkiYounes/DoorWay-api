@@ -27,9 +27,9 @@ public class InterviewingProcess {
     @ManyToOne
     private Interviewee interviewee;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Interview> interviews = Collections.emptyList();
+    private List<Interview> interviews = new ArrayList<>();
 
     @CreatedDate
     private Date createdAt;
