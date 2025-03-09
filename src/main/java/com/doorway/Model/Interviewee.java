@@ -3,7 +3,9 @@ package com.doorway.Model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -24,6 +26,11 @@ public class Interviewee {
     private String password;
     @ManyToOne
     private School school;
+
+    @OneToMany
+    @Builder.Default
+    private List<InterviewingProcess> interviewingProcesses = Collections.emptyList();
+
     @Column(columnDefinition = "BYTEA")
     @Builder.Default
     private byte[] profilePicture = new byte[0];
