@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface InterviewingProcessService {
     InterviewingProcess getInterviewingProcessById(UUID interviewingProcessId);
-    InterviewingProcess createInterviewingProcess(InterviewingProcessPayload interviewingProcessPayload);
+    InterviewingProcess createInterviewingProcess(UUID intervieweeId,InterviewingProcessPayload interviewingProcessPayload);
     InterviewingProcess updateInterviewingProcess(UUID interviewingProcessId,InterviewingProcessPayload interviewingProcessPayload);
     void deleteInterviewingProcess(UUID interviewingProcessId);
     List<InterviewingProcess> getAllInterviewingProcessesByIntervieweeId(UUID intervieweeId);

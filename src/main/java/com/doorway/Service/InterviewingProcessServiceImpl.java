@@ -35,12 +35,12 @@ public class InterviewingProcessServiceImpl implements InterviewingProcessServic
     }
 
     @Override
-    public InterviewingProcess createInterviewingProcess(InterviewingProcessPayload interviewingProcessPayload) {
+    public InterviewingProcess createInterviewingProcess(UUID intervieweeId,InterviewingProcessPayload interviewingProcessPayload) {
         Role role = roleService.getRole(interviewingProcessPayload.getRoleId());
         if (role == null) {
             throw new NotFoundException("Role not found");
         }
-        Interviewee interviewee = intervieweeService.getIntervieweeById(interviewingProcessPayload.getIntervieweeId());
+        Interviewee interviewee = intervieweeService.getIntervieweeById(intervieweeId);
         if (interviewee == null) {
             throw new NotFoundException("Interviewee not found");
         }
@@ -54,12 +54,8 @@ public class InterviewingProcessServiceImpl implements InterviewingProcessServic
         if (role == null) {
             throw new NotFoundException("Role not found");
         }
-        Interviewee interviewee = intervieweeService.getIntervieweeById(interviewingProcessPayload.getIntervieweeId());
-        if (interviewee == null) {
-            throw new NotFoundException("Interviewee not found");
-        }
         InterviewingProcess interviewingProcess = getInterviewingProcessById(interviewingProcessId);
-        return interviewingProcessRepository.save(interviewingProcessPayload.toEntity(interviewingProcess, role, interviewee));
+        return interviewingProcessRepository.save(interviewingProcessPayload.toEntity(interviewingProcess, role));
     }
 
     @Override

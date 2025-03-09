@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -26,10 +25,6 @@ public class InterviewingProcessPayload {
     @NotNull(message = "Role is mandatory")
     private Long roleId;
 
-    @NotNull(message = "Interviewee ID is mandatory")
-    private UUID intervieweeId;
-
-
     public InterviewingProcess toEntity(Role role, Interviewee interviewee) {
         return InterviewingProcess.builder()
                 .feedback(feedback)
@@ -40,11 +35,10 @@ public class InterviewingProcessPayload {
     }
 
 
-    public InterviewingProcess toEntity(InterviewingProcess interviewingProcess, Role role, Interviewee interviewee) {
+    public InterviewingProcess toEntity(InterviewingProcess interviewingProcess, Role role) {
         interviewingProcess.setDecision(decision);
         interviewingProcess.setFeedback(feedback);
         interviewingProcess.setRole(role);
-        interviewingProcess.setInterviewee(interviewee);
         return interviewingProcess;
     }
 }

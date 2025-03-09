@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/interviewing-processes")
+@RequestMapping("/api")
 @Validated
 public class InterviewingProcessController {
     private final InterviewingProcessService interviewingProcessService;
@@ -24,31 +24,31 @@ public class InterviewingProcessController {
         this.interviewingProcessService = interviewingProcessService;
     }
 
-    @PostMapping
-    public ResponseEntity<InterviewingProcess> createInterviewingProcess(@Valid @RequestBody InterviewingProcessPayload interviewingProcessPayload) {
-        InterviewingProcess interviewingProcess = interviewingProcessService.createInterviewingProcess(interviewingProcessPayload);
+    @PostMapping("/interviewee/{intervieweeId}/interviewing-processes")
+    public ResponseEntity<InterviewingProcess> createInterviewingProcess(@Valid @RequestBody InterviewingProcessPayload interviewingProcessPayload, @PathVariable UUID intervieweeId) {
+        InterviewingProcess interviewingProcess = interviewingProcessService.createInterviewingProcess(intervieweeId, interviewingProcessPayload);
         return ResponseEntity.status(HttpStatus.CREATED).body(interviewingProcess);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/interviewing-processes/{id}")
     public ResponseEntity<InterviewingProcess> getInterviewingProcessById(@PathVariable UUID id) {
         InterviewingProcess interviewingProcess = interviewingProcessService.getInterviewingProcessById(id);
         return ResponseEntity.ok(interviewingProcess);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/interviewing-processes/{id}")
     public ResponseEntity<InterviewingProcess> updateInterviewingProcess(@PathVariable UUID id, @Valid @RequestBody InterviewingProcessPayload interviewingProcessPayload) {
         InterviewingProcess interviewingProcess = interviewingProcessService.updateInterviewingProcess(id, interviewingProcessPayload);
         return ResponseEntity.ok(interviewingProcess);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/interviewing-processes/{id}")
     public ResponseEntity<Void> deleteInterviewingProcess(@PathVariable UUID id) {
         interviewingProcessService.deleteInterviewingProcess(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/interviewee/{intervieweeId}")
+    @GetMapping("/interviewee/{intervieweeId}/interviewing-processes")
     public ResponseEntity<List<InterviewingProcess>> getAllInterviewingProcessesByIntervieweeId(@PathVariable UUID intervieweeId) {
         List<InterviewingProcess> interviewingProcesses = interviewingProcessService.getAllInterviewingProcessesByIntervieweeId(intervieweeId);
         return ResponseEntity.ok(interviewingProcesses);
