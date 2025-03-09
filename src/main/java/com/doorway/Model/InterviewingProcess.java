@@ -29,7 +29,7 @@ public class InterviewingProcess {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Interview> interviews = new ArrayList<>();
+    private List<Interview> interviews = Collections.emptyList();
 
     @CreatedDate
     private Date createdAt;
