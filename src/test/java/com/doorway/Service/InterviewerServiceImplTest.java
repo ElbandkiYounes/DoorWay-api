@@ -162,7 +162,7 @@ public class InterviewerServiceImplTest {
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(interviewer.getName(), result.get(0).getName());
+        assertEquals(interviewer.getName(), result.getFirst().getName());
 
         verify(interviewerRepository, times(1)).findAll();
     }
