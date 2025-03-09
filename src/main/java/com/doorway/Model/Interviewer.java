@@ -23,7 +23,9 @@ public class Interviewer {
     private String phoneNumber;
 
     private String password;
-    private String role;
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @Column(columnDefinition = "BYTEA")
     @Builder.Default

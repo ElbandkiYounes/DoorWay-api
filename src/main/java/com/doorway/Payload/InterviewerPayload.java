@@ -2,6 +2,7 @@ package com.doorway.Payload;
 
 import com.doorway.Model.Interviewer;
 
+import com.doorway.Model.Role;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,12 +28,12 @@ public class InterviewerPayload {
     @NotBlank(message = "Password is mandatory")
     private String password;
 
-    @NotBlank(message = "Role is mandatory")
-    private String role;
+    @NotNull(message = "Role is mandatory")
+    private Long roleId;
 
 
 
-    public Interviewer toEntity(MultipartFile image) throws IOException {
+    public Interviewer toEntity(MultipartFile image, Role role) throws IOException {
          Interviewer interviewer = Interviewer.builder()
                 .name(name)
                 .email(email)
@@ -44,7 +45,7 @@ public class InterviewerPayload {
          return interviewer;
     }
 
-    public Interviewer toEntity(Interviewer interviewer, MultipartFile image) throws IOException {
+    public Interviewer toEntity(Interviewer interviewer, MultipartFile image, Role role) throws IOException {
         interviewer.setName(name);
         interviewer.setEmail(email);
         interviewer.setPhoneNumber(phoneNumber);
