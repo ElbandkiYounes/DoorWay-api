@@ -17,5 +17,6 @@ public class PrincipleQuestion {
 
     private String question;
 
+    @Enumerated(EnumType.STRING)
     private ExcellencePrinciple principle;
 }

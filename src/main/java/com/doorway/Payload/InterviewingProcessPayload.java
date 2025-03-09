@@ -19,7 +19,6 @@ public class InterviewingProcessPayload {
     @NotBlank(message = "Feedback is mandatory")
     private String feedback;
 
-    @NotNull(message = "Decision is mandatory")
     private Decision decision;
 
     @NotNull(message = "Role is mandatory")
