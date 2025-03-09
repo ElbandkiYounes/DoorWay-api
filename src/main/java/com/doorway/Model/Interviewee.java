@@ -1,5 +1,6 @@
 package com.doorway.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,6 +30,7 @@ public class Interviewee {
 
     @OneToMany
     @Builder.Default
+    @JsonIgnore
     private List<InterviewingProcess> interviewingProcesses = Collections.emptyList();
 
     @Column(columnDefinition = "BYTEA")
