@@ -4,13 +4,11 @@ import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.Interviewee;
 import com.doorway.Model.InterviewingProcess;
 import com.doorway.Model.Role;
-import com.doorway.Model.School;
 import com.doorway.Payload.InterviewingProcessPayload;
 import com.doorway.Repository.InterviewingProcessRepository;
 import com.doorway.Service.Interface.IntervieweeService;
 import com.doorway.Service.Interface.InterviewingProcessService;
 import com.doorway.Service.Interface.RoleService;
-import com.doorway.Service.Interface.SchoolService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
