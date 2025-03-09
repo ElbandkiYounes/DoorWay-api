@@ -18,8 +18,8 @@ public class InterviewingProcessPayload {
 
     @NotBlank(message = "Feedback is mandatory")
     private String feedback;
-
-    private Decision decision;
+    @Builder.Default
+    private Decision decision = Decision.NEUTRAL;
 
     @NotNull(message = "Role is mandatory")
     private Long roleId;
