@@ -3,8 +3,10 @@ package com.doorway.Service;
 import com.doorway.Exception.FileException;
 import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.Interviewer;
+import com.doorway.Model.Role;
 import com.doorway.Payload.InterviewerPayload;
 import com.doorway.Repository.InterviewerRepository;
+import com.doorway.Service.Interface.RoleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +28,9 @@ public class InterviewerServiceImplTest {
     private InterviewerRepository interviewerRepository;
 
     @Mock
+    private RoleService roleService;
+
+    @Mock
     private MultipartFile image;
 
     @InjectMocks
@@ -33,6 +38,7 @@ public class InterviewerServiceImplTest {
 
     private InterviewerPayload payload;
     private Interviewer interviewer;
+    private Role role;
 
     @BeforeEach
     void setUp() {
@@ -41,7 +47,7 @@ public class InterviewerServiceImplTest {
         payload.setEmail("john.doe@example.com");
         payload.setPhoneNumber("1234567890");
         payload.setPassword("password");
-        payload.setRole("Interviewer");
+        payload.setRoleId(1L);
 
         interviewer = Interviewer.builder()
                 .id(UUID.randomUUID())
@@ -49,8 +55,12 @@ public class InterviewerServiceImplTest {
                 .email("john.doe@example.com")
                 .phoneNumber("1234567890")
                 .password("password")
-                .role("Interviewer")
+                .role(new Role())
                 .build();
+
+        role = new Role();
+        role.setId(1L);
+        role.setName("Interviewer");
     }
 
     @Test
@@ -58,6 +68,9 @@ public class InterviewerServiceImplTest {
         // Mock image validation
         when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
         when(image.getContentType()).thenReturn("image/jpeg");
+
+        // Mock role retrieval
+        when(roleService.getRole(payload.getRoleId())).thenReturn(role);
 
         // Mock repository save
         when(interviewerRepository.save(any(Interviewer.class))).thenReturn(interviewer);
@@ -149,7 +162,7 @@ public class InterviewerServiceImplTest {
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(interviewer.getName(), result.getFirst().getName());
+        assertEquals(interviewer.getName(), result.get(0).getName());
 
         verify(interviewerRepository, times(1)).findAll();
     }
@@ -160,6 +173,7 @@ public class InterviewerServiceImplTest {
         when(interviewerRepository.findById(id)).thenReturn(Optional.of(interviewer));
         when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
         when(image.getContentType()).thenReturn("image/jpeg");
+        when(roleService.getRole(payload.getRoleId())).thenReturn(role);
         when(interviewerRepository.save(any(Interviewer.class))).thenReturn(interviewer);
 
         Interviewer result = interviewerService.updateInterviewer(id, payload, image);
@@ -173,9 +187,31 @@ public class InterviewerServiceImplTest {
     }
 
     @Test
-    void updateInterviewer_NotFound() {
+    void updateInterviewer_RoleNotFound() {
+        UUID id = UUID.randomUUID();
+        when(roleService.getRole(payload.getRoleId())).thenReturn(null);
+
+        // Mock image validation to avoid NullPointerException
+        when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
+        when(image.getContentType()).thenReturn("image/jpeg");
+
+        // Call the method and expect an exception
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+            interviewerService.updateInterviewer(id, payload, image);
+        });
+
+        // Verify the exception message
+        assertEquals("Role not found with ID: " + payload.getRoleId(), exception.getMessage());
+
+        // Verify repository interaction
+        verify(interviewerRepository, never()).save(any(Interviewer.class));
+    }
+
+    @Test
+    void updateInterviewer_InterviewerNotFound() {
         UUID id = UUID.randomUUID();
         when(interviewerRepository.findById(id)).thenReturn(Optional.empty());
+        when(roleService.getRole(payload.getRoleId())).thenReturn(role);
 
         // Mock image validation to avoid NullPointerException
         when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB

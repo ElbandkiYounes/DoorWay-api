@@ -3,9 +3,11 @@ package com.doorway.Service;
 import com.doorway.Exception.FileException;
 import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.Interviewer;
+import com.doorway.Model.Role;
 import com.doorway.Payload.InterviewerPayload;
 import com.doorway.Repository.InterviewerRepository;
 import com.doorway.Service.Interface.InterviewerService;
+import com.doorway.Service.Interface.RoleService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,9 +22,11 @@ public class InterviewerServiceImpl implements InterviewerService {
     private static final List<String> ALLOWED_FILE_TYPES = List.of("image/jpeg", "image/png");
 
     private final InterviewerRepository interviewerRepository;
+    private final RoleService roleService;
 
-    public InterviewerServiceImpl(InterviewerRepository interviewerRepository) {
+    public InterviewerServiceImpl(InterviewerRepository interviewerRepository, RoleService roleService) {
         this.interviewerRepository = interviewerRepository;
+        this.roleService = roleService;
     }
 
     //Create Interviewer
@@ -37,8 +41,13 @@ public class InterviewerServiceImpl implements InterviewerService {
             throw new FileException("Only JPEG and PNG images are allowed.");
         }
 
+        Role role = roleService.getRole(payload.getRoleId());
+        if(role == null){
+            throw new NotFoundException("Role not found with ID: " + payload.getRoleId());
+        }
+
         try {
-            Interviewer interviewer = payload.toEntity(image);
+            Interviewer interviewer = payload.toEntity(image,role);
             return interviewerRepository.save(interviewer);
         } catch (IOException e) {
             throw new FileException("Failed to process the image: " + e.getMessage());
@@ -69,10 +78,14 @@ public class InterviewerServiceImpl implements InterviewerService {
         if (!ALLOWED_FILE_TYPES.contains(image.getContentType())) {
             throw new FileException("Only JPEG and PNG images are allowed.");
         }
+        Role role = roleService.getRole(payload.getRoleId());
+        if(role == null){
+            throw new NotFoundException("Role not found with ID: " + payload.getRoleId());
+        }
 
         try {
             Interviewer interviewer = getInterviewerById(id);
-            interviewer = payload.toEntity(interviewer, image);
+            interviewer = payload.toEntity(interviewer, image, role);
             return interviewerRepository.save(interviewer);
         } catch (IOException e) {
             throw new FileException("Failed to process the image: " + e.getMessage());
