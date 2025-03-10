@@ -33,7 +33,7 @@ public class InterviewController {
     }
 
     // Get an interview by its ID
-    @GetMapping("/interviews/{interviewId}")
+    @GetMapping("/interview/{interviewId}")
     public ResponseEntity<Interview> getInterviewById(@PathVariable UUID interviewId) {
             Interview interview = interviewService.getInterviewById(interviewId);
             return new ResponseEntity<>(interview, HttpStatus.OK);
@@ -49,7 +49,7 @@ public class InterviewController {
     }
 
     // Get all interviews for a specific interviewer
-    @GetMapping("/interviewers/{interviewerId}/interviews")
+    @GetMapping("/interviewer/{interviewerId}/interviews")
     public ResponseEntity<List<Interview>> getInterviewsByInterviewer(@PathVariable UUID interviewerId) {
         List<Interview> interviews = interviewService.getInterviewsByInterviewer(interviewerId);
         return new ResponseEntity<>(interviews, HttpStatus.OK);
