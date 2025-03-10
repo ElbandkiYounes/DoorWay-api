@@ -69,6 +69,14 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     public List<Interview> getInterviewsByProcess(UUID intervieweeId, UUID processId) {
+        InterviewingProcess interviewingProcess = interviewingProcessService.getInterviewingProcessById(processId);
+        if (interviewingProcess == null) {
+            throw new NotFoundException("Interviewing Process not found");
+        }
+        Interviewee interviewee = intervieweeService.getIntervieweeById(intervieweeId);
+        if (interviewee == null) {
+            throw new NotFoundException("Interviewee not found");
+        }
         return interviewRepository.findAllByInterviewingProcessId(processId);
     }
 
