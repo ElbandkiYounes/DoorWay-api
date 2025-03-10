@@ -33,7 +33,7 @@ public class InterviewController {
     }
 
     // Get an interview by its ID
-    @GetMapping("/interview/{interviewId}")
+    @GetMapping("/interviews/{interviewId}")
     public ResponseEntity<Interview> getInterviewById(@PathVariable UUID interviewId) {
             Interview interview = interviewService.getInterviewById(interviewId);
             return new ResponseEntity<>(interview, HttpStatus.OK);

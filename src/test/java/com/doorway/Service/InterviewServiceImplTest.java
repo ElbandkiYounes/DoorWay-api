@@ -62,8 +62,8 @@ class InterviewServiceImplTest {
         processId = UUID.randomUUID();
         interviewerId = UUID.randomUUID();
 
-        interviewPayload = new InterviewPayload();
-        interviewPayload.setInterviewerId(interviewerId);
+        interviewPayload = mock(InterviewPayload.class);
+        when(interviewPayload.getInterviewerId()).thenReturn(interviewerId);
 
         interview = new Interview();
         interviewee = new Interviewee();
@@ -99,6 +99,8 @@ class InterviewServiceImplTest {
     @Test
     void getInterviewsByProcess_ShouldReturnInterviews() {
         List<Interview> interviews = List.of(new Interview(), new Interview());
+        when(interviewingProcessService.getInterviewingProcessById(processId)).thenReturn(interviewingProcess);
+        when(intervieweeService.getIntervieweeById(intervieweeId)).thenReturn(interviewee);
         when(interviewRepository.findAllByInterviewingProcessId(processId)).thenReturn(interviews);
 
         List<Interview> result = interviewService.getInterviewsByProcess(intervieweeId, processId);
@@ -111,6 +113,7 @@ class InterviewServiceImplTest {
     @Test
     void getInterviewsByInterviewer_ShouldReturnInterviews() {
         List<Interview> interviews = List.of(new Interview(), new Interview());
+        when(interviewerService.getInterviewerById(interviewerId)).thenReturn(interviewer);
         when(interviewRepository.findAllByInterviewerId(interviewerId)).thenReturn(interviews);
 
         List<Interview> result = interviewService.getInterviewsByInterviewer(interviewerId);
@@ -127,6 +130,7 @@ class InterviewServiceImplTest {
         when(intervieweeService.getIntervieweeById(intervieweeId)).thenReturn(interviewee);
         when(interviewerService.getInterviewerById(interviewerId)).thenReturn(interviewer);
         when(interviewRepository.save(any(Interview.class))).thenReturn(interview);
+        when(interviewPayload.toEntity(interviewer, interviewingProcess)).thenReturn(interview);
 
         // Method call
         Interview result = interviewService.createInterview(intervieweeId, processId, interviewPayload);
@@ -227,6 +231,7 @@ class InterviewServiceImplTest {
         when(interviewerService.getInterviewerById(interviewerId)).thenReturn(interviewer);
         when(interviewRepository.findById(interviewId)).thenReturn(Optional.of(interview));
         when(interviewRepository.save(any(Interview.class))).thenReturn(interview);
+        when(interviewPayload.toEntity(interview, interviewer)).thenReturn(interview);
 
         Interview result = interviewService.updateInterview(interviewId, intervieweeId, processId, interviewPayload);
 
