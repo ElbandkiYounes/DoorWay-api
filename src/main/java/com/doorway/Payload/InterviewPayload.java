@@ -20,7 +20,8 @@ public class InterviewPayload {
 
     private String feedback;
 
-    private Decision decision;
+    @Builder.Default
+    private Decision decision = Decision.NEUTRAL;
 
     @NotNull(message = "Schedule date is mandatory")
     @Future(message = "The interview must be scheduled in the future")
