@@ -18,6 +18,7 @@ public class InterviewingProcessPayload {
 
     @NotBlank(message = "Feedback is mandatory")
     private String feedback;
+
     @Builder.Default
     private Decision decision = Decision.NEUTRAL;
 

@@ -48,6 +48,7 @@ public class InterviewerServiceImpl implements InterviewerService {
 
         try {
             Interviewer interviewer = payload.toEntity(image,role);
+            System.out.println(interviewer);
             return interviewerRepository.save(interviewer);
         } catch (IOException e) {
             throw new FileException("Failed to process the image: " + e.getMessage());

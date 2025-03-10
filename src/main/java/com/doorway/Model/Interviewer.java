@@ -11,6 +11,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString(exclude = "profilePicture")
 @Table(name = "interviewers")
 public class Interviewer {
     @Id
