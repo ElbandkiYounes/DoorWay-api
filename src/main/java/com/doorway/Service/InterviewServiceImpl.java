@@ -32,7 +32,6 @@ public class InterviewServiceImpl implements InterviewService {
         this.interviewRepository = interviewRepository;
     }
 
-
     @Override
     public Interview createInterview(UUID intervieweeId, UUID processId, InterviewPayload interviewPayload) {
         InterviewingProcess interviewingProcess = interviewingProcessService.getInterviewingProcessById(processId);
@@ -49,17 +48,13 @@ public class InterviewServiceImpl implements InterviewService {
             throw new ConflictException("Interviewee does not belong to the provided interviewing process");
         }
 
-
         Interviewer interviewer = interviewerService.getInterviewerById(interviewPayload.getInterviewerId());
 
         if (interviewer == null) {
             throw new NotFoundException("Interviewer not found");
         }
 
-            return interviewRepository.save(interviewPayload.toEntity(interviewer, interviewingProcess));
-
-
-
+        return interviewRepository.save(interviewPayload.toEntity(interviewer, interviewingProcess));
     }
 
     @Override
@@ -121,6 +116,5 @@ public class InterviewServiceImpl implements InterviewService {
 
         return interviewRepository.save(interviewPayload.toEntity(interview, interviewer));
     }
-
 
 }
