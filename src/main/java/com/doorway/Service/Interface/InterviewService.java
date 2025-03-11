@@ -11,9 +11,7 @@ public interface InterviewService {
 
 
     Interview createInterview(UUID intervieweeId, UUID processId,  InterviewPayload payload);
-
-
-
+    Interview updateInterview(UUID interviewId, UUID intervieweeId, UUID processId, InterviewPayload payload);
     Interview getInterviewById(UUID interviewId);
 
     List<Interview> getInterviewsByProcess(UUID intervieweeId, UUID processId);
@@ -22,6 +20,5 @@ public interface InterviewService {
 
     void deleteInterview(UUID interviewId);
 
-    Interview updateInterview(UUID interviewId, UUID intervieweeId, UUID processId, InterviewPayload payload);
 
 }
