@@ -20,6 +20,7 @@ public class TechnicalAnswerPayload {
     @Size(max = 1000, message = "Answer cannot be longer than 1000 characters")
     private String answer;
 
+    @NotNull(message = "Bar cannot be null")
     private Bar bar;
 
 

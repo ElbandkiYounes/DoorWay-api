@@ -17,28 +17,23 @@ public class TechnicalQuestionServiceImpl implements TechnicalQuestionService {
         this.technicalQuestionRepository = technicalQuestionRepository;
     }
 
-    //Add TechnicalQuestion
     public TechnicalQuestion addTechnicalQuestion(TechnicalQuestionPayload technicalQuestionPayload) {
         return technicalQuestionRepository.save(technicalQuestionPayload.toEntity());
     }
 
-    //Get TechnicalQuestion
     public TechnicalQuestion getTechnicalQuestion(Long id) {
         return technicalQuestionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Technical Question not found"));
     }
 
-    //Get All TechnicalQuestion
     public List<TechnicalQuestion> getAllTechnicalQuestions() {
         return technicalQuestionRepository.findAll();
     }
-    //Update TechnicalQuestion
     public TechnicalQuestion updateTechnicalQuestion(Long id, TechnicalQuestionPayload technicalQuestionPayload) {
         TechnicalQuestion technicalQuestion = getTechnicalQuestion(id);
         return technicalQuestionRepository.save(technicalQuestionPayload.toEntity(technicalQuestion));
     }
 
-    //Delete TechnicalQuestion
     public void deleteTechnicalQuestion(Long id) {
         technicalQuestionRepository.delete(getTechnicalQuestion(id));
     }
