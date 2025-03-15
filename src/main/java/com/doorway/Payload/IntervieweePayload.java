@@ -1,13 +1,11 @@
 package com.doorway.Payload;
 
-import com.doorway.Model.Interviewee;
-import com.doorway.Model.School;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
+import com.doorway.Model.Interviewee;
+import com.doorway.Model.School;
 
 import java.io.IOException;
 import java.util.Date;
@@ -20,15 +18,26 @@ import java.util.Date;
 public class IntervieweePayload {
     @NotBlank(message = "Name is mandatory")
     private String name;
+
     @NotBlank(message = "Email is mandatory")
-    @Email(message = "Email is invalid")
+    @Email(message = "Invalid email format")
     private String email;
+
+    @Past(message = "Date of birth must be in the past")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date dateOfBirth;
+
     @NotBlank(message = "Phone number is mandatory")
+    @Pattern(regexp = "^(\\+\\d{1,3})?\\d{10}$", message = "Invalid phone number format. Expected format: +<country_code>XXXXXXXXXX or XXXXXXXXXX.")
     private String phoneNumber;
+
     @NotBlank(message = "Password is mandatory")
+    @Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+            message = "Password must be at least 8 characters long, include uppercase, lowercase, digit, and special character"
+    )
     private String password;
+
     @NotNull(message = "School is mandatory")
     private Long schoolId;
 
