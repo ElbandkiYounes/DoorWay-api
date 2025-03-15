@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -34,6 +36,8 @@ public class Interview {
 
 
     @ManyToOne
+    @JoinColumn(name = "interviewer_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Interviewer interviewer;
 
     @ManyToOne

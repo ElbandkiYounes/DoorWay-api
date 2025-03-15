@@ -1,6 +1,7 @@
 package com.doorway.Service;
 
 import com.doorway.Exception.FileException;
+import com.doorway.Exception.InvalidArgumentException;
 import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.Decision;
 import com.doorway.Model.Interviewee;
@@ -35,35 +36,56 @@ class IntervieweeServiceImplTest {
     @InjectMocks
     private IntervieweeServiceImpl intervieweeService;
 
+    private UUID validId;
+    private Interviewee mockInterviewee;
+    private IntervieweePayload validPayload;
+    private MultipartFile validImage;
+    private MultipartFile validResume;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        // Setup common test data
+        validId = UUID.randomUUID();
+        mockInterviewee = new Interviewee();
+        mockInterviewee.setEmail("test@example.com");
+        mockInterviewee.setPhoneNumber("1234567890");
+
+        validPayload = new IntervieweePayload();
+        validPayload.setEmail("new@example.com");
+        validPayload.setPhoneNumber("0987654321");
+        validPayload.setSchoolId(1L);
+
+        School mockSchool = new School();
+
+        validImage = new MockMultipartFile("image", "image.jpg", "image/jpeg", new byte[1024]);
+        validResume = new MockMultipartFile("resume", "resume.pdf", "application/pdf", new byte[1024]);
+
+        when(schoolService.getSchool(validPayload.getSchoolId())).thenReturn(mockSchool);
     }
 
     @Test
     void getIntervieweeById_ShouldReturnInterviewee_WhenFound() {
-        UUID id = UUID.randomUUID();
-        Interviewee interviewee = new Interviewee();
-        when(intervieweeRepository.findById(id)).thenReturn(Optional.of(interviewee));
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
 
-        Interviewee result = intervieweeService.getIntervieweeById(id);
+        Interviewee result = intervieweeService.getIntervieweeById(validId);
 
         assertNotNull(result);
-        assertEquals(interviewee, result);
-        verify(intervieweeRepository, times(1)).findById(id);
+        assertEquals(mockInterviewee, result);
+        verify(intervieweeRepository, times(1)).findById(validId);
     }
 
     @Test
     void getIntervieweeById_ShouldThrowNotFoundException_WhenNotFound() {
-        UUID id = UUID.randomUUID();
-        when(intervieweeRepository.findById(id)).thenReturn(Optional.empty());
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> intervieweeService.getIntervieweeById(id));
-        verify(intervieweeRepository, times(1)).findById(id);
+        assertThrows(NotFoundException.class, () -> intervieweeService.getIntervieweeById(validId));
+        verify(intervieweeRepository, times(1)).findById(validId);
     }
 
     @Test
-    void getAllInterviewees_ShouldReturnAllInterviewees() {
+    void getAllInterviewees_ShouldReturnAllInterviewees_WhenDecisionIsNull() {
         List<Interviewee> interviewees = List.of(new Interviewee(), new Interviewee());
         when(intervieweeRepository.findAll()).thenReturn(interviewees);
 
@@ -71,11 +93,13 @@ class IntervieweeServiceImplTest {
 
         assertNotNull(result);
         assertEquals(interviewees, result);
+        assertEquals(2, result.size());
         verify(intervieweeRepository, times(1)).findAll();
+        verify(intervieweeRepository, never()).findAllByInterviewingProcesses_Decision(any(Decision.class));
     }
 
     @Test
-    void getAllInterviewees_ShouldReturnIntervieweesByDecision() {
+    void getAllInterviewees_ShouldReturnIntervieweesByDecision_WhenDecisionIsProvided() {
         Decision decision = Decision.NEUTRAL;
         List<Interviewee> interviewees = List.of(new Interviewee(), new Interviewee());
         when(intervieweeRepository.findAllByInterviewingProcesses_Decision(decision)).thenReturn(interviewees);
@@ -85,71 +109,322 @@ class IntervieweeServiceImplTest {
         assertNotNull(result);
         assertEquals(interviewees, result);
         verify(intervieweeRepository, times(1)).findAllByInterviewingProcesses_Decision(decision);
+        verify(intervieweeRepository, never()).findAll();
     }
 
     @Test
-    void saveInterviewee_ShouldSaveInterviewee_WhenValid() {
-        IntervieweePayload payload = new IntervieweePayload();
-        MultipartFile image = new MockMultipartFile("image", "image.jpg", "image/jpeg", new byte[0]);
-        MultipartFile resume = new MockMultipartFile("resume", "resume.pdf", "application/pdf", new byte[0]);
-        School school = new School();
-        when(schoolService.getSchool(payload.getSchoolId())).thenReturn(school);
-        Interviewee interviewee = new Interviewee();
-        when(intervieweeRepository.save(any(Interviewee.class))).thenReturn(interviewee);
+    void saveInterviewee_ShouldSaveInterviewee_WhenAllInputsAreValid() {
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(false);
+        when(intervieweeRepository.existsByPhoneNumber(validPayload.getPhoneNumber())).thenReturn(false);
+        when(intervieweeRepository.save(any(Interviewee.class))).thenReturn(mockInterviewee);
 
-        Interviewee result = intervieweeService.saveInterviewee(payload, image, resume);
+        Interviewee result = intervieweeService.saveInterviewee(validPayload, validImage, validResume);
 
         assertNotNull(result);
-        assertEquals(interviewee, result);
+        assertEquals(mockInterviewee, result);
         verify(intervieweeRepository, times(1)).save(any(Interviewee.class));
+        verify(schoolService, times(1)).getSchool(validPayload.getSchoolId());
+    }
+
+    @Test
+    void saveInterviewee_ShouldThrowInvalidArgumentException_WhenEmailAlreadyExists() {
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(true);
+
+        InvalidArgumentException exception = assertThrows(InvalidArgumentException.class,
+                () -> intervieweeService.saveInterviewee(validPayload, validImage, validResume));
+
+        assertEquals("Email already exists", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void saveInterviewee_ShouldThrowInvalidArgumentException_WhenPhoneNumberAlreadyExists() {
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(false);
+        when(intervieweeRepository.existsByPhoneNumber(validPayload.getPhoneNumber())).thenReturn(true);
+
+        InvalidArgumentException exception = assertThrows(InvalidArgumentException.class,
+                () -> intervieweeService.saveInterviewee(validPayload, validImage, validResume));
+
+        assertEquals("Phone number already exists", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void saveInterviewee_ShouldThrowNotFoundException_WhenSchoolNotFound() {
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(false);
+        when(intervieweeRepository.existsByPhoneNumber(validPayload.getPhoneNumber())).thenReturn(false);
+        when(schoolService.getSchool(validPayload.getSchoolId())).thenReturn(null);
+
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> intervieweeService.saveInterviewee(validPayload, validImage, validResume));
+
+        assertEquals("School not found", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
     }
 
     @Test
     void saveInterviewee_ShouldThrowFileException_WhenImageSizeExceedsLimit() {
-        IntervieweePayload payload = new IntervieweePayload();
-        MultipartFile image = new MockMultipartFile("image", "image.jpg", "image/jpeg", new byte[6 * 1024 * 1024]);
-        MultipartFile resume = new MockMultipartFile("resume", "resume.pdf", "application/pdf", new byte[0]);
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(false);
+        when(intervieweeRepository.existsByPhoneNumber(validPayload.getPhoneNumber())).thenReturn(false);
 
-        assertThrows(FileException.class, () -> intervieweeService.saveInterviewee(payload, image, resume));
+        MultipartFile oversizedImage = new MockMultipartFile("image", "image.jpg", "image/jpeg", new byte[6 * 1024 * 1024]);
+
+        FileException exception = assertThrows(FileException.class,
+                () -> intervieweeService.saveInterviewee(validPayload, oversizedImage, validResume));
+
+        assertEquals("Image size exceeds the maximum allowed size of 5MB.", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
     }
 
     @Test
-    void updateInterviewee_ShouldUpdateInterviewee_WhenValid() {
-        UUID id = UUID.randomUUID();
-        IntervieweePayload payload = new IntervieweePayload();
-        MultipartFile image = new MockMultipartFile("image", "image.jpg", "image/jpeg", new byte[0]);
-        MultipartFile resume = new MockMultipartFile("resume", "resume.pdf", "application/pdf", new byte[0]);
-        Interviewee interviewee = new Interviewee();
-        School school = new School();
-        when(intervieweeRepository.findById(id)).thenReturn(Optional.of(interviewee));
-        when(schoolService.getSchool(payload.getSchoolId())).thenReturn(school);
-        when(intervieweeRepository.save(any(Interviewee.class))).thenReturn(interviewee);
+    void saveInterviewee_ShouldThrowFileException_WhenImageTypeIsInvalid() {
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(false);
+        when(intervieweeRepository.existsByPhoneNumber(validPayload.getPhoneNumber())).thenReturn(false);
 
-        Interviewee result = intervieweeService.updateInterviewee(id, payload, image, resume);
+        MultipartFile invalidImageType = new MockMultipartFile("image", "image.gif", "image/gif", new byte[1024]);
+
+        FileException exception = assertThrows(FileException.class,
+                () -> intervieweeService.saveInterviewee(validPayload, invalidImageType, validResume));
+
+        assertEquals("Only JPEG and PNG images are allowed.", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void saveInterviewee_ShouldThrowFileException_WhenResumeSizeExceedsLimit() {
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(false);
+        when(intervieweeRepository.existsByPhoneNumber(validPayload.getPhoneNumber())).thenReturn(false);
+
+        MultipartFile oversizedResume = new MockMultipartFile("resume", "resume.pdf", "application/pdf", new byte[11 * 1024 * 1024]);
+
+        FileException exception = assertThrows(FileException.class,
+                () -> intervieweeService.saveInterviewee(validPayload, validImage, oversizedResume));
+
+        assertEquals("Resume size exceeds the maximum allowed size of 10MB.", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void saveInterviewee_ShouldThrowFileException_WhenResumeTypeIsInvalid() {
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(false);
+        when(intervieweeRepository.existsByPhoneNumber(validPayload.getPhoneNumber())).thenReturn(false);
+
+        MultipartFile invalidResumeType = new MockMultipartFile("resume", "resume.doc", "application/msword", new byte[1024]);
+
+        FileException exception = assertThrows(FileException.class,
+                () -> intervieweeService.saveInterviewee(validPayload, validImage, invalidResumeType));
+
+        assertEquals("Only PDF files are allowed.", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void updateInterviewee_ShouldUpdateInterviewee_WhenAllInputsAreValid() {
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+        when(intervieweeRepository.save(any(Interviewee.class))).thenReturn(mockInterviewee);
+
+        Interviewee result = intervieweeService.updateInterviewee(validId, validPayload, validImage, validResume);
 
         assertNotNull(result);
-        assertEquals(interviewee, result);
+        assertEquals(mockInterviewee, result);
         verify(intervieweeRepository, times(1)).save(any(Interviewee.class));
+        verify(schoolService, times(1)).getSchool(validPayload.getSchoolId());
+    }
+
+    @Test
+    void updateInterviewee_ShouldThrowNotFoundException_WhenIntervieweeNotFound() {
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class,
+                () -> intervieweeService.updateInterviewee(validId, validPayload, validImage, validResume));
+
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void updateInterviewee_ShouldThrowInvalidArgumentException_WhenEmailAlreadyExists() {
+        // Setup a different email for the update
+        validPayload.setEmail("different@example.com");
+
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(true);
+
+        InvalidArgumentException exception = assertThrows(InvalidArgumentException.class,
+                () -> intervieweeService.updateInterviewee(validId, validPayload, validImage, validResume));
+
+        assertEquals("Email already exists", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void updateInterviewee_ShouldThrowInvalidArgumentException_WhenPhoneNumberAlreadyExists() {
+        // Setup a different phone number for the update
+        validPayload.setPhoneNumber("9999999999");
+
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(false);
+        when(intervieweeRepository.existsByPhoneNumber(validPayload.getPhoneNumber())).thenReturn(true);
+
+        InvalidArgumentException exception = assertThrows(InvalidArgumentException.class,
+                () -> intervieweeService.updateInterviewee(validId, validPayload, validImage, validResume));
+
+        assertEquals("Phone number already exists", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void updateInterviewee_ShouldThrowNotFoundException_WhenSchoolNotFound() {
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+        when(schoolService.getSchool(validPayload.getSchoolId())).thenReturn(null);
+
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> intervieweeService.updateInterviewee(validId, validPayload, validImage, validResume));
+
+        assertEquals("School not found", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void updateInterviewee_ShouldNotCheckEmailUniqueness_WhenEmailUnchanged() {
+        // Same email as the existing interviewee
+        validPayload.setEmail("test@example.com");
+
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+        when(intervieweeRepository.save(any(Interviewee.class))).thenReturn(mockInterviewee);
+
+        Interviewee result = intervieweeService.updateInterviewee(validId, validPayload, validImage, validResume);
+
+        assertNotNull(result);
+        assertEquals(mockInterviewee, result);
+        verify(intervieweeRepository, times(1)).save(any(Interviewee.class));
+        verify(intervieweeRepository, never()).existsByEmail(anyString());
+    }
+
+    @Test
+    void updateInterviewee_ShouldNotCheckPhoneNumberUniqueness_WhenPhoneNumberUnchanged() {
+        // Same phone number as the existing interviewee
+        validPayload.setPhoneNumber("1234567890");
+
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+        when(intervieweeRepository.save(any(Interviewee.class))).thenReturn(mockInterviewee);
+
+        Interviewee result = intervieweeService.updateInterviewee(validId, validPayload, validImage, validResume);
+
+        assertNotNull(result);
+        assertEquals(mockInterviewee, result);
+        verify(intervieweeRepository, times(1)).save(any(Interviewee.class));
+        verify(intervieweeRepository, never()).existsByPhoneNumber(anyString());
+    }
+
+    @Test
+    void updateInterviewee_ShouldThrowFileException_WhenImageSizeExceedsLimit() {
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+
+        MultipartFile oversizedImage = new MockMultipartFile("image", "image.jpg", "image/jpeg", new byte[6 * 1024 * 1024]);
+
+        FileException exception = assertThrows(FileException.class,
+                () -> intervieweeService.updateInterviewee(validId, validPayload, oversizedImage, validResume));
+
+        assertEquals("Image size exceeds the maximum allowed size of 5MB.", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void updateInterviewee_ShouldThrowFileException_WhenImageTypeIsInvalid() {
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+
+        MultipartFile invalidImageType = new MockMultipartFile("image", "image.gif", "image/gif", new byte[1024]);
+
+        FileException exception = assertThrows(FileException.class,
+                () -> intervieweeService.updateInterviewee(validId, validPayload, invalidImageType, validResume));
+
+        assertEquals("Only JPEG and PNG images are allowed.", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void updateInterviewee_ShouldThrowFileException_WhenResumeSizeExceedsLimit() {
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+
+        MultipartFile oversizedResume = new MockMultipartFile("resume", "resume.pdf", "application/pdf", new byte[11 * 1024 * 1024]);
+
+        FileException exception = assertThrows(FileException.class,
+                () -> intervieweeService.updateInterviewee(validId, validPayload, validImage, oversizedResume));
+
+        assertEquals("Resume size exceeds the maximum allowed size of 10MB.", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void updateInterviewee_ShouldThrowFileException_WhenResumeTypeIsInvalid() {
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+
+        MultipartFile invalidResumeType = new MockMultipartFile("resume", "resume.doc", "application/msword", new byte[1024]);
+
+        FileException exception = assertThrows(FileException.class,
+                () -> intervieweeService.updateInterviewee(validId, validPayload, validImage, invalidResumeType));
+
+        assertEquals("Only PDF files are allowed.", exception.getMessage());
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
+    }
+
+    @Test
+    void updateInterviewee_ShouldHandleIoException_WhenProcessingFilesFails() throws IOException {
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+
+        // Mock IntervieweePayload to throw IOException when toEntity is called
+        IntervieweePayload mockPayload = mock(IntervieweePayload.class);
+        when(mockPayload.getEmail()).thenReturn("test@example.com");
+        when(mockPayload.getPhoneNumber()).thenReturn("1234567890");
+        when(mockPayload.getSchoolId()).thenReturn(validPayload.getSchoolId());
+        when(mockPayload.toEntity(any(Interviewee.class), any(MultipartFile.class), any(MultipartFile.class), any(School.class)))
+                .thenThrow(new IOException("Test IO exception"));
+
+        FileException exception = assertThrows(FileException.class,
+                () -> intervieweeService.updateInterviewee(validId, mockPayload, validImage, validResume));
+
+        assertTrue(exception.getMessage().contains("Failed to process the image or resume"));
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
     }
 
     @Test
     void deleteInterviewee_ShouldDeleteInterviewee_WhenFound() {
-        UUID id = UUID.randomUUID();
-        Interviewee interviewee = new Interviewee();
-        when(intervieweeRepository.findById(id)).thenReturn(Optional.of(interviewee));
-        doNothing().when(intervieweeRepository).delete(interviewee);
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.of(mockInterviewee));
+        doNothing().when(intervieweeRepository).delete(mockInterviewee);
 
-        intervieweeService.deleteInterviewee(id);
+        intervieweeService.deleteInterviewee(validId);
 
-        verify(intervieweeRepository, times(1)).delete(interviewee);
+        verify(intervieweeRepository, times(1)).delete(mockInterviewee);
     }
 
     @Test
     void deleteInterviewee_ShouldThrowNotFoundException_WhenNotFound() {
-        UUID id = UUID.randomUUID();
-        when(intervieweeRepository.findById(id)).thenReturn(Optional.empty());
+        when(intervieweeRepository.findById(validId)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> intervieweeService.deleteInterviewee(id));
-        verify(intervieweeRepository, times(1)).findById(id);
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> intervieweeService.deleteInterviewee(validId));
+
+        assertEquals("Interviewee not found", exception.getMessage());
+        verify(intervieweeRepository, never()).delete(any(Interviewee.class));
+    }
+
+    @Test
+    void saveInterviewee_ShouldHandleIoException_WhenProcessingFilesFails() throws IOException {
+        when(intervieweeRepository.existsByEmail(validPayload.getEmail())).thenReturn(false);
+        when(intervieweeRepository.existsByPhoneNumber(validPayload.getPhoneNumber())).thenReturn(false);
+
+        // Mock IntervieweePayload to throw IOException when toEntity is called
+        IntervieweePayload mockPayload = mock(IntervieweePayload.class);
+        when(mockPayload.getEmail()).thenReturn("test@example.com");
+        when(mockPayload.getPhoneNumber()).thenReturn("1234567890");
+        when(mockPayload.getSchoolId()).thenReturn(validPayload.getSchoolId());
+        when(mockPayload.toEntity(any(MultipartFile.class), any(MultipartFile.class), any(School.class)))
+                .thenThrow(new IOException("Test IO exception"));
+
+        FileException exception = assertThrows(FileException.class,
+                () -> intervieweeService.saveInterviewee(mockPayload, validImage, validResume));
+
+        assertTrue(exception.getMessage().contains("Failed to process the image or resume"));
+        verify(intervieweeRepository, never()).save(any(Interviewee.class));
     }
 }

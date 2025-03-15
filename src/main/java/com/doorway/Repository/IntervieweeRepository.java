@@ -9,4 +9,7 @@ import java.util.UUID;
 
 public interface IntervieweeRepository extends JpaRepository<Interviewee, UUID> {
     List<Interviewee> findAllByInterviewingProcesses_Decision(Decision decision);
+    boolean existsByEmail(String email);
+    boolean existsByPhoneNumber(String phoneNumber);
+
 }

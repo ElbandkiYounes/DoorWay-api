@@ -1,8 +1,11 @@
 package com.doorway.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -27,6 +30,11 @@ public class Interviewer {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "interviewer")
+    private List<Interview> interviews = Collections.emptyList();
+
 
     @Column(columnDefinition = "BYTEA")
     @Builder.Default

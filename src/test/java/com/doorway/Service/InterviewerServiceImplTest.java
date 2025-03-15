@@ -1,6 +1,7 @@
 package com.doorway.Service;
 
 import com.doorway.Exception.FileException;
+import com.doorway.Exception.InvalidArgumentException;
 import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.Interviewer;
 import com.doorway.Model.Role;
@@ -12,9 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +35,9 @@ public class InterviewerServiceImplTest {
 
     @Mock
     private MultipartFile image;
+
+    @Mock
+    private InterviewerPayload mockPayload;
 
     @InjectMocks
     private InterviewerServiceImpl interviewerService;
@@ -64,7 +70,7 @@ public class InterviewerServiceImplTest {
     }
 
     @Test
-    void createInterviewer_Success(){
+    void createInterviewer_Success() {
         // Mock image validation
         when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
         when(image.getContentType()).thenReturn("image/jpeg");
@@ -88,40 +94,76 @@ public class InterviewerServiceImplTest {
     }
 
     @Test
+    void createInterviewer_EmailAlreadyExists() {
+        when(interviewerRepository.existsByEmail(payload.getEmail())).thenReturn(true);
+
+        InvalidArgumentException exception = assertThrows(InvalidArgumentException.class, () -> interviewerService.createInterviewer(payload, image));
+
+        assertEquals("Email already exists", exception.getMessage());
+        verify(interviewerRepository, never()).save(any(Interviewer.class));
+    }
+
+    @Test
+    void createInterviewer_PhoneNumberAlreadyExists() {
+        when(interviewerRepository.existsByPhoneNumber(payload.getPhoneNumber())).thenReturn(true);
+
+        InvalidArgumentException exception = assertThrows(InvalidArgumentException.class, () -> interviewerService.createInterviewer(payload, image));
+
+        assertEquals("Phone number already exists", exception.getMessage());
+        verify(interviewerRepository, never()).save(any(Interviewer.class));
+    }
+
+    @Test
     void createInterviewer_ImageSizeExceedsLimit() {
-        // Mock image validation
         when(image.getSize()).thenReturn(6 * 1024 * 1024L); // 6MB
 
-        // Call the method and expect an exception
-        FileException exception = assertThrows(FileException.class, () -> {
-            interviewerService.createInterviewer(payload, image);
-        });
+        FileException exception = assertThrows(FileException.class, () -> interviewerService.createInterviewer(payload, image));
 
-        // Verify the exception message
         assertEquals("Image size exceeds the maximum allowed size of 5MB.", exception.getMessage());
-
-        // Verify no repository interaction
         verify(interviewerRepository, never()).save(any(Interviewer.class));
     }
 
     @Test
     void createInterviewer_InvalidImageType() {
-        // Mock image validation
         when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
         when(image.getContentType()).thenReturn("image/gif");
 
-        // Call the method and expect an exception
-        FileException exception = assertThrows(FileException.class, () -> {
-            interviewerService.createInterviewer(payload, image);
-        });
+        FileException exception = assertThrows(FileException.class, () -> interviewerService.createInterviewer(payload, image));
 
-        // Verify the exception message
         assertEquals("Only JPEG and PNG images are allowed.", exception.getMessage());
-
-        // Verify no repository interaction
         verify(interviewerRepository, never()).save(any(Interviewer.class));
     }
 
+    @Test
+    void createInterviewer_RoleNotFound() {
+        when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
+        when(image.getContentType()).thenReturn("image/jpeg");
+        when(roleService.getRole(payload.getRoleId())).thenReturn(null);
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> interviewerService.createInterviewer(payload, image));
+
+        assertEquals("Role not found with ID: " + payload.getRoleId(), exception.getMessage());
+        verify(interviewerRepository, never()).save(any(Interviewer.class));
+    }
+
+    @Test
+    void createInterviewer_ImageProcessingFailure() throws IOException {
+        // Use a spy on payload to throw IOException when toEntity is called
+        InterviewerPayload spyPayload = Mockito.spy(payload);
+
+        when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
+        when(image.getContentType()).thenReturn("image/jpeg");
+        when(roleService.getRole(payload.getRoleId())).thenReturn(role);
+
+        doThrow(new IOException("Image processing error")).when(spyPayload).toEntity(any(MultipartFile.class), any(Role.class));
+
+        FileException exception = assertThrows(FileException.class, () -> interviewerService.createInterviewer(spyPayload, image));
+
+        assertEquals("Failed to process the image: Image processing error", exception.getMessage());
+        verify(interviewerRepository, never()).save(any(Interviewer.class));
+    }
+
+    // --- Get Interviewer by ID ---
     @Test
     void getInterviewerById_Success() {
         UUID id = UUID.randomUUID();
@@ -141,18 +183,13 @@ public class InterviewerServiceImplTest {
         UUID id = UUID.randomUUID();
         when(interviewerRepository.findById(id)).thenReturn(Optional.empty());
 
-        // Call the method and expect an exception
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            interviewerService.getInterviewerById(id);
-        });
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> interviewerService.getInterviewerById(id));
 
-        // Verify the exception message
         assertEquals("Interviewer not found with ID: " + id, exception.getMessage());
-
-        // Verify repository interaction
         verify(interviewerRepository, times(1)).findById(id);
     }
 
+    // --- Get All Interviewers ---
     @Test
     void getAllInterviewers_Success() {
         List<Interviewer> interviewers = Collections.singletonList(interviewer);
@@ -167,43 +204,131 @@ public class InterviewerServiceImplTest {
         verify(interviewerRepository, times(1)).findAll();
     }
 
+    // --- Update Interviewer ---
     @Test
-    void updateInterviewer_Success(){
+    void updateInterviewer_Success() {
         UUID id = UUID.randomUUID();
-        when(interviewerRepository.findById(id)).thenReturn(Optional.of(interviewer));
+        Interviewer existingInterviewer = Interviewer.builder()
+                .id(id)
+                .name("John Doe")
+                .email("john.doe@example.com")
+                .phoneNumber("1234567890")
+                .password("password")
+                .role(role)
+                .build();
+
+        when(interviewerRepository.findById(id)).thenReturn(Optional.of(existingInterviewer));
         when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
         when(image.getContentType()).thenReturn("image/jpeg");
         when(roleService.getRole(payload.getRoleId())).thenReturn(role);
-        when(interviewerRepository.save(any(Interviewer.class))).thenReturn(interviewer);
+        when(interviewerRepository.save(any(Interviewer.class))).thenReturn(existingInterviewer);
 
         Interviewer result = interviewerService.updateInterviewer(id, payload, image);
 
         assertNotNull(result);
-        assertEquals(interviewer.getName(), result.getName());
-        assertEquals(interviewer.getEmail(), result.getEmail());
+        assertEquals(existingInterviewer.getName(), result.getName());
+        assertEquals(existingInterviewer.getEmail(), result.getEmail());
 
         verify(interviewerRepository, times(1)).findById(id);
         verify(interviewerRepository, times(1)).save(any(Interviewer.class));
     }
 
     @Test
+    void updateInterviewer_EmailAlreadyExists() {
+        UUID id = UUID.randomUUID();
+        Interviewer existingInterviewer = Interviewer.builder()
+                .id(id)
+                .name("John Doe")
+                .email("old.email@example.com")  // Different email
+                .phoneNumber("1234567890")
+                .password("password")
+                .role(role)
+                .build();
+
+        when(interviewerRepository.findById(id)).thenReturn(Optional.of(existingInterviewer));
+        when(interviewerRepository.existsByEmail(payload.getEmail())).thenReturn(true);
+
+        FileException exception = assertThrows(FileException.class, () -> interviewerService.updateInterviewer(id, payload, image));
+
+        assertEquals("Email already exists", exception.getMessage());
+        verify(interviewerRepository, never()).save(any(Interviewer.class));
+    }
+
+    @Test
+    void updateInterviewer_PhoneNumberAlreadyExists() {
+        UUID id = UUID.randomUUID();
+        Interviewer existingInterviewer = Interviewer.builder()
+                .id(id)
+                .name("John Doe")
+                .email("john.doe@example.com")
+                .phoneNumber("9876543210")  // Different phone number
+                .password("password")
+                .role(role)
+                .build();
+
+        when(interviewerRepository.findById(id)).thenReturn(Optional.of(existingInterviewer));
+        when(interviewerRepository.existsByPhoneNumber(payload.getPhoneNumber())).thenReturn(true);
+
+        InvalidArgumentException exception = assertThrows(InvalidArgumentException.class, () -> interviewerService.updateInterviewer(id, payload, image));
+
+        assertEquals("Phone number already exists", exception.getMessage());
+        verify(interviewerRepository, never()).save(any(Interviewer.class));
+    }
+
+    @Test
+    void updateInterviewer_ImageSizeExceedsLimit() {
+        UUID id = UUID.randomUUID();
+        when(interviewerRepository.findById(id)).thenReturn(Optional.of(interviewer));
+        when(image.getSize()).thenReturn(6 * 1024 * 1024L); // 6MB
+
+        FileException exception = assertThrows(FileException.class, () -> interviewerService.updateInterviewer(id, payload, image));
+
+        assertEquals("Image size exceeds the maximum allowed size of 5MB.", exception.getMessage());
+        verify(interviewerRepository, never()).save(any(Interviewer.class));
+    }
+
+    @Test
+    void updateInterviewer_InvalidImageType() {
+        UUID id = UUID.randomUUID();
+        when(interviewerRepository.findById(id)).thenReturn(Optional.of(interviewer));
+        when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
+        when(image.getContentType()).thenReturn("image/gif");
+
+        FileException exception = assertThrows(FileException.class, () -> interviewerService.updateInterviewer(id, payload, image));
+
+        assertEquals("Only JPEG and PNG images are allowed.", exception.getMessage());
+        verify(interviewerRepository, never()).save(any(Interviewer.class));
+    }
+
+    @Test
     void updateInterviewer_RoleNotFound() {
         UUID id = UUID.randomUUID();
-        when(roleService.getRole(payload.getRoleId())).thenReturn(null);
-
-        // Mock image validation to avoid NullPointerException
+        when(interviewerRepository.findById(id)).thenReturn(Optional.of(interviewer));
         when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
         when(image.getContentType()).thenReturn("image/jpeg");
+        when(roleService.getRole(payload.getRoleId())).thenReturn(null);
 
-        // Call the method and expect an exception
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            interviewerService.updateInterviewer(id, payload, image);
-        });
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> interviewerService.updateInterviewer(id, payload, image));
 
-        // Verify the exception message
         assertEquals("Role not found with ID: " + payload.getRoleId(), exception.getMessage());
+        verify(interviewerRepository, never()).save(any(Interviewer.class));
+    }
 
-        // Verify repository interaction
+    @Test
+    void updateInterviewer_ImageProcessingFailure() throws IOException {
+        UUID id = UUID.randomUUID();
+        InterviewerPayload spyPayload = Mockito.spy(payload);
+
+        when(interviewerRepository.findById(id)).thenReturn(Optional.of(interviewer));
+        when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
+        when(image.getContentType()).thenReturn("image/jpeg");
+        when(roleService.getRole(spyPayload.getRoleId())).thenReturn(role);
+
+        doThrow(new IOException("Image processing error")).when(spyPayload).toEntity(any(Interviewer.class), any(MultipartFile.class), any(Role.class));
+
+        FileException exception = assertThrows(FileException.class, () -> interviewerService.updateInterviewer(id, spyPayload, image));
+
+        assertEquals("Failed to process the image: Image processing error", exception.getMessage());
         verify(interviewerRepository, never()).save(any(Interviewer.class));
     }
 
@@ -211,36 +336,33 @@ public class InterviewerServiceImplTest {
     void updateInterviewer_InterviewerNotFound() {
         UUID id = UUID.randomUUID();
         when(interviewerRepository.findById(id)).thenReturn(Optional.empty());
-        when(roleService.getRole(payload.getRoleId())).thenReturn(role);
 
-        // Mock image validation to avoid NullPointerException
-        when(image.getSize()).thenReturn(4 * 1024 * 1024L); // 4MB
-        when(image.getContentType()).thenReturn("image/jpeg");
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> interviewerService.updateInterviewer(id, payload, image));
 
-        // Call the method and expect an exception
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            interviewerService.updateInterviewer(id, payload, image);
-        });
-
-        // Verify the exception message
         assertEquals("Interviewer not found with ID: " + id, exception.getMessage());
-
-        // Verify repository interaction
-        verify(interviewerRepository, times(1)).findById(id);
         verify(interviewerRepository, never()).save(any(Interviewer.class));
     }
 
+    // --- Delete Interviewer ---
     @Test
     void deleteInterviewer_Success() {
         UUID id = UUID.randomUUID();
+        when(interviewerRepository.findById(id)).thenReturn(Optional.of(interviewer));
         doNothing().when(interviewerRepository).deleteById(id);
 
-        // Call the method and expect no exception
-        assertDoesNotThrow(() -> {
-            interviewerService.deleteInterviewer(id);
-        });
+        assertDoesNotThrow(() -> interviewerService.deleteInterviewer(id));
 
-        // Verify repository interaction
         verify(interviewerRepository, times(1)).deleteById(id);
+    }
+
+    @Test
+    void deleteInterviewer_NotFound() {
+        UUID id = UUID.randomUUID();
+        when(interviewerRepository.findById(id)).thenReturn(Optional.empty());
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> interviewerService.deleteInterviewer(id));
+
+        assertEquals("Interviewer not found with ID: " + id, exception.getMessage());
+        verify(interviewerRepository, never()).deleteById(id);
     }
 }
