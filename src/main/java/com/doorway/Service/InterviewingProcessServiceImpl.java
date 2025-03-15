@@ -71,7 +71,7 @@ public class InterviewingProcessServiceImpl implements InterviewingProcessServic
         if (interviewee == null) {
             throw new NotFoundException("Interviewee not found");
         }
-        return interviewingProcessRepository.findAllByIntervieweeId(intervieweeId);
+        return interviewingProcessRepository.findAllByInterviewee_Id(intervieweeId);
     }
 
 

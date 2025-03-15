@@ -1,13 +1,11 @@
 package com.doorway.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Getter
@@ -28,7 +26,7 @@ public class Interviewee {
     @ManyToOne
     private School school;
 
-    @OneToMany
+    @OneToMany(mappedBy = "interviewee", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @JsonIgnore
     private List<InterviewingProcess> interviewingProcesses = Collections.emptyList();
@@ -40,5 +38,12 @@ public class Interviewee {
     @Column(columnDefinition = "BYTEA")
     @Builder.Default
     private byte[] resume = new byte[0];
+
+    @JsonProperty("newestInterviewingProcess")
+    public InterviewingProcess getNewestInterviewingProcess() {
+        return interviewingProcesses.stream()
+                .max(Comparator.comparing(InterviewingProcess::getCreatedAt))
+                .orElse(null);
+    }
 }
 
