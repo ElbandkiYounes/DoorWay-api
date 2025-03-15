@@ -1,6 +1,7 @@
 package com.doorway.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -29,6 +30,7 @@ public class InterviewingProcess {
     private Role role;
 
     @ManyToOne
+    @JsonIgnore
     private Interviewee interviewee;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -38,4 +40,9 @@ public class InterviewingProcess {
 
     @CreatedDate
     private LocalDateTime createdAt;
+
+        @JsonProperty("intervieweeId")
+    public UUID getIntervieweeId() {
+        return interviewee.getId();
+    }
 }

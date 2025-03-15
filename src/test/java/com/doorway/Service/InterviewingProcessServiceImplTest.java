@@ -185,7 +185,7 @@ class InterviewingProcessServiceImplTest {
     void getAllInterviewingProcessesByIntervieweeId_ShouldReturnProcesses_WhenIntervieweeExists() {
         List<InterviewingProcess> processes = List.of(interviewingProcess, interviewingProcess);
         when(intervieweeService.getIntervieweeById(intervieweeId)).thenReturn(interviewee);
-        when(interviewingProcessRepository.findAllByIntervieweeId(intervieweeId)).thenReturn(processes);
+        when(interviewingProcessRepository.findAllByInterviewee_Id(intervieweeId)).thenReturn(processes);
 
         List<InterviewingProcess> result = interviewingProcessService.getAllInterviewingProcessesByIntervieweeId(intervieweeId);
 
@@ -193,7 +193,7 @@ class InterviewingProcessServiceImplTest {
         assertEquals(processes, result);
         assertEquals(2, result.size());
         verify(intervieweeService, times(1)).getIntervieweeById(intervieweeId);
-        verify(interviewingProcessRepository, times(1)).findAllByIntervieweeId(intervieweeId);
+        verify(interviewingProcessRepository, times(1)).findAllByInterviewee_Id(intervieweeId);
     }
 
     @Test
@@ -202,6 +202,6 @@ class InterviewingProcessServiceImplTest {
 
         assertThrows(NotFoundException.class, () -> interviewingProcessService.getAllInterviewingProcessesByIntervieweeId(intervieweeId));
         verify(intervieweeService, times(1)).getIntervieweeById(intervieweeId);
-        verify(interviewingProcessRepository, never()).findAllByIntervieweeId(any());
+        verify(interviewingProcessRepository, never()).findAllByInterviewee_Id(any());
     }
 }

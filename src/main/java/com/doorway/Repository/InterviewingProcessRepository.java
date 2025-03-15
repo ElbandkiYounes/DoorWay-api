@@ -8,5 +8,5 @@ import java.util.List;
 import java.util.UUID;
 @Repository
 public interface InterviewingProcessRepository extends JpaRepository<InterviewingProcess, UUID> {
-    List<InterviewingProcess> findAllByIntervieweeId(UUID intervieweeId);
+    List<InterviewingProcess> findAllByInterviewee_Id(UUID intervieweeId);
 }
