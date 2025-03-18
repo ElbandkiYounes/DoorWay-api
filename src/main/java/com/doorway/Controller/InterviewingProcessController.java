@@ -30,6 +30,12 @@ public class InterviewingProcessController {
         return ResponseEntity.status(HttpStatus.CREATED).body(interviewingProcess);
     }
 
+    @GetMapping("/interviewing-processes")
+    public ResponseEntity<List<InterviewingProcess>> getAllInterviewingProcesses() {
+        List<InterviewingProcess> interviewingProcesses = interviewingProcessService.getAllInterviewingProcesses();
+        return ResponseEntity.ok(interviewingProcesses);
+    }
+
     @GetMapping("/interviewing-processes/{id}")
     public ResponseEntity<InterviewingProcess> getInterviewingProcessById(@PathVariable UUID id) {
         InterviewingProcess interviewingProcess = interviewingProcessService.getInterviewingProcessById(id);

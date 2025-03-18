@@ -12,5 +12,5 @@ public interface InterviewingProcessService {
     InterviewingProcess updateInterviewingProcess(UUID interviewingProcessId,InterviewingProcessPayload interviewingProcessPayload);
     void deleteInterviewingProcess(UUID interviewingProcessId);
     List<InterviewingProcess> getAllInterviewingProcessesByIntervieweeId(UUID intervieweeId);
-
+    List<InterviewingProcess> getAllInterviewingProcesses();
 }

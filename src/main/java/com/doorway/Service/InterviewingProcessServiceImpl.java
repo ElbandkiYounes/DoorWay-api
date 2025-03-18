@@ -28,6 +28,9 @@ public class InterviewingProcessServiceImpl implements InterviewingProcessServic
         this.intervieweeService = intervieweeService;
     }
 
+    public List<InterviewingProcess> getAllInterviewingProcesses() {
+        return interviewingProcessRepository.findAll();
+    }
 
     @Override
     public InterviewingProcess getInterviewingProcessById(UUID interviewingProcessId) {
