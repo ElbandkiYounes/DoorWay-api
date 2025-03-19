@@ -104,6 +104,18 @@ public class InterviewerServiceImpl implements InterviewerService {
     }
 
     @Override
+    public Boolean getInterviewerByPhone(String phoneNumber, UUID excludeId) {
+        if (excludeId != null) {
+            Interviewer interviewer = interviewerRepository.findById(excludeId)
+                    .orElseThrow(() -> new NotFoundException("Interviewer not found"));
+            if (interviewer.getPhoneNumber().equals(phoneNumber)) {
+                return false;
+            }
+        }
+        return interviewerRepository.existsByPhoneNumber(phoneNumber);
+    }
+
+    @Override
     public Boolean getInterviewerByEmail(String email, UUID excludeId) {
         if (excludeId != null) {
             Interviewer interviewer = interviewerRepository.findById(excludeId)
@@ -113,18 +125,6 @@ public class InterviewerServiceImpl implements InterviewerService {
             }
         }
         return interviewerRepository.existsByEmail(email);
-    }
-
-    @Override
-    public Boolean getInterviewerByPhone(String phoneNumber, UUID excludeId) {
-        if (phoneNumber != null) {
-            Interviewer interviewer = interviewerRepository.findById(excludeId)
-                    .orElseThrow(() -> new NotFoundException("Interviewer not found"));
-            if (interviewer.getPhoneNumber().equals(phoneNumber)) {
-                return false;
-            }
-        }
-        return interviewerRepository.existsByPhoneNumber(phoneNumber);
     }
 
     // Helper method to validate the image

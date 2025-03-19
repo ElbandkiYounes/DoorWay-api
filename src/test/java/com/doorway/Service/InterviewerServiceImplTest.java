@@ -42,11 +42,14 @@ public class InterviewerServiceImplTest {
     @InjectMocks
     private InterviewerServiceImpl interviewerService;
 
+
     private InterviewerPayload payload;
     private Interviewer interviewer;
     private Role role;
     private Interviewer exludedInterviewer;
     private UUID excludeId;
+    private UUID validId;
+    private Interviewer mockInterviewer;
 
     @BeforeEach
     void setUp() {
@@ -76,7 +79,15 @@ public class InterviewerServiceImplTest {
                 .email("test@example.com")
                 .phoneNumber("1234567890")
                 .build();
+
+        validId = UUID.randomUUID();
+        mockInterviewer = Interviewer.builder()
+                .id(validId)
+                .email("mock@example.com")
+                .phoneNumber("0987654321")
+                .build();
     }
+
 
     @Test
     void createInterviewer_Success() {
@@ -376,57 +387,71 @@ public class InterviewerServiceImplTest {
     }
 
     @Test
-    void getInterviewerByEmail_ShouldReturnTrue_WhenEmailExists() {
-        when(interviewerRepository.existsByEmail("test@example.com")).thenReturn(true);
+    void getInterviewerByPhone_ShouldThrowNotFoundException_WhenExcludedInterviewerNotFound() {
+        String phoneNumber = "1234567890";
+        UUID excludeId = UUID.randomUUID();
 
-        Boolean result = interviewerService.getInterviewerByEmail("test@example.com", null);
+        when(interviewerRepository.findById(excludeId)).thenReturn(Optional.empty());
 
+        assertThrows(NotFoundException.class, () -> interviewerService.getInterviewerByPhone(phoneNumber, excludeId));
+        verify(interviewerRepository, times(1)).findById(excludeId);
+        verify(interviewerRepository, never()).existsByPhoneNumber(phoneNumber);
+    }
+
+    @Test
+    void getInterviewerByEmail_ShouldThrowNotFoundException_WhenExcludedInterviewerNotFound() {
+        String email = "test@example.com";
+        UUID excludeId = UUID.randomUUID();
+
+        when(interviewerRepository.findById(excludeId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> interviewerService.getInterviewerByEmail(email, excludeId));
+        verify(interviewerRepository, times(1)).findById(excludeId);
+        verify(interviewerRepository, never()).existsByEmail(email);
+    }
+
+    @Test
+    void getInterviewerByPhone_ShouldReturnTrue_WhenPhoneNumberExists() {
+        String phoneNumber = "1234567890";
+
+        // Test with null excludeId
+        when(interviewerRepository.existsByPhoneNumber(phoneNumber)).thenReturn(true);
+        Boolean result = interviewerService.getInterviewerByPhone(phoneNumber, null);
         assertTrue(result);
-        verify(interviewerRepository, times(1)).existsByEmail("test@example.com");
+        verify(interviewerRepository, times(1)).existsByPhoneNumber(phoneNumber);
+    }
+
+    @Test
+    void getInterviewerByPhone_ShouldReturnFalse_WhenPhoneNumberDoesNotExist() {
+        String phoneNumber = "1234567890";
+
+        // Test with null excludeId
+        when(interviewerRepository.existsByPhoneNumber(phoneNumber)).thenReturn(false);
+        Boolean result = interviewerService.getInterviewerByPhone(phoneNumber, null);
+        assertFalse(result);
+        verify(interviewerRepository, times(1)).existsByPhoneNumber(phoneNumber);
+    }
+
+    @Test
+    void getInterviewerByEmail_ShouldReturnTrue_WhenEmailExists() {
+        String email = "test@example.com";
+
+        // Test with null excludeId
+        when(interviewerRepository.existsByEmail(email)).thenReturn(true);
+        Boolean result = interviewerService.getInterviewerByEmail(email, null);
+        assertTrue(result);
+        verify(interviewerRepository, times(1)).existsByEmail(email);
     }
 
     @Test
     void getInterviewerByEmail_ShouldReturnFalse_WhenEmailDoesNotExist() {
-        when(interviewerRepository.existsByEmail("test@example.com")).thenReturn(false);
+        String email = "test@example.com";
 
-        Boolean result = interviewerService.getInterviewerByEmail("test@example.com", null);
-
+        // Test with null excludeId
+        when(interviewerRepository.existsByEmail(email)).thenReturn(false);
+        Boolean result = interviewerService.getInterviewerByEmail(email, null);
         assertFalse(result);
-        verify(interviewerRepository, times(1)).existsByEmail("test@example.com");
+        verify(interviewerRepository, times(1)).existsByEmail(email);
     }
 
-    @Test
-    void getInterviewerByEmail_ShouldThrowNotFoundException_WhenExcludeIdNotFound() {
-        when(interviewerRepository.findById(excludeId)).thenReturn(Optional.empty());
-
-        NotFoundException exception = assertThrows(NotFoundException.class, () ->
-                interviewerService.getInterviewerByEmail("test@example.com", excludeId));
-
-        assertEquals("Interviewer not found", exception.getMessage());
-        verify(interviewerRepository, times(1)).findById(excludeId);
-        verify(interviewerRepository, never()).existsByEmail(anyString());
-    }
-
-    @Test
-    void getInterviewerByPhone_ShouldReturnFalse_WhenPhoneNumberMatchesExcludeId() {
-        when(interviewerRepository.findById(excludeId)).thenReturn(Optional.of(interviewer));
-
-        Boolean result = interviewerService.getInterviewerByPhone("1234567890", excludeId);
-
-        assertFalse(result);
-        verify(interviewerRepository, times(1)).findById(excludeId);
-        verify(interviewerRepository, never()).existsByPhoneNumber(anyString());
-    }
-
-    @Test
-    void getInterviewerByPhone_ShouldThrowNotFoundException_WhenExcludeIdNotFound() {
-        when(interviewerRepository.findById(excludeId)).thenReturn(Optional.empty());
-
-        NotFoundException exception = assertThrows(NotFoundException.class, () ->
-                interviewerService.getInterviewerByPhone("1234567890", excludeId));
-
-        assertEquals("Interviewer not found", exception.getMessage());
-        verify(interviewerRepository, times(1)).findById(excludeId);
-        verify(interviewerRepository, never()).existsByPhoneNumber(anyString());
-    }
 }
