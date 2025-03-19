@@ -24,7 +24,9 @@ public class InterviewingProcess {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Decision decision = Decision.NEUTRAL;
+    @Column(columnDefinition = "TEXT")
     private String feedback;
+
 
     @ManyToOne
     private Role role;
