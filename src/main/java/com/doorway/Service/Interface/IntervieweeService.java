@@ -13,4 +13,8 @@ public interface IntervieweeService {
     Interviewee saveInterviewee(IntervieweePayload intervieweePayload, MultipartFile image, MultipartFile resume);
     Interviewee updateInterviewee(UUID id, IntervieweePayload intervieweePayload, MultipartFile image, MultipartFile resume);
     void deleteInterviewee(UUID id);
+
+    Boolean getIntervieweeByPhone(String phone, UUID excludeId);
+
+    Boolean getIntervieweeByEmail(String email, UUID excludeId);
 }

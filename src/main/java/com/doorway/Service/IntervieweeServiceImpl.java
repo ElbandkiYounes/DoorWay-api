@@ -109,6 +109,30 @@ public class IntervieweeServiceImpl implements IntervieweeService {
         intervieweeRepository.delete(interviewee);
     }
 
+    @Override
+    public Boolean getIntervieweeByPhone(String phone, UUID excludeId) {
+        if (excludeId != null) {
+            Interviewee interviewee = intervieweeRepository.findById(excludeId)
+                    .orElseThrow(() -> new NotFoundException("Interviewee not found"));
+            if (interviewee.getPhoneNumber().equals(phone)) {
+                return false;
+            }
+        }
+        return intervieweeRepository.existsByPhoneNumber(phone);
+    }
+
+    @Override
+    public Boolean getIntervieweeByEmail(String email, UUID excludeId) {
+        if (excludeId != null) {
+            Interviewee interviewee = intervieweeRepository.findById(excludeId)
+                    .orElseThrow(() -> new NotFoundException("Interviewee not found"));
+            if (interviewee.getEmail().equals(email)) {
+                return false;
+            }
+        }
+        return intervieweeRepository.existsByEmail(email);
+    }
+
     // Helper method to validate the image
     private void validateImage(MultipartFile image) {
         if (image.getSize() > MAX_IMAGE_SIZE) {
