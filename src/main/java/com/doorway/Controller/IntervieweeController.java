@@ -24,6 +24,18 @@ public class IntervieweeController {
         this.intervieweeService = intervieweeService;
     }
 
+    @GetMapping("/email/{email}")
+    public ResponseEntity<Boolean> getIntervieweeByEmail(@PathVariable String email, @RequestParam(required = false) UUID excludeId) {
+        Boolean exists = intervieweeService.getIntervieweeByEmail(email, excludeId);
+        return ResponseEntity.ok(exists);
+    }
+
+    @GetMapping("/phoneNumber/{phoneNumber}")
+    public ResponseEntity<Boolean> getIntervieweeByPhone(@PathVariable String phoneNumber, @RequestParam(required = false) UUID excludeId) {
+        Boolean exists = intervieweeService.getIntervieweeByPhone(phoneNumber, excludeId);
+        return ResponseEntity.ok(exists);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Interviewee> getIntervieweeById(@PathVariable UUID id) {
         Interviewee interviewee = intervieweeService.getIntervieweeById(id);

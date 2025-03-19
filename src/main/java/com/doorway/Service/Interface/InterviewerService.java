@@ -18,4 +18,8 @@ public interface InterviewerService {
     Interviewer updateInterviewer(UUID id, InterviewerPayload payload, MultipartFile image);
 
     void deleteInterviewer(UUID id);
+
+    Boolean getInterviewerByEmail(String email, UUID excludeId);
+
+    Boolean getInterviewerByPhone(String phoneNumber, UUID excludeId);
 }

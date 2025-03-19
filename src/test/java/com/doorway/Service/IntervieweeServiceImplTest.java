@@ -427,4 +427,100 @@ class IntervieweeServiceImplTest {
         assertTrue(exception.getMessage().contains("Failed to process the image or resume"));
         verify(intervieweeRepository, never()).save(any(Interviewee.class));
     }
+
+    @Test
+    void getIntervieweeByPhone_ShouldReturnFalse_WhenPhoneNumberBelongsToExcludedId() {
+        String phoneNumber = "1234567890";
+        UUID excludeId = validId;
+
+        when(intervieweeRepository.findById(excludeId)).thenReturn(Optional.of(mockInterviewee));
+
+        Boolean result = intervieweeService.getIntervieweeByPhone(phoneNumber, excludeId);
+
+        assertFalse(result);
+        verify(intervieweeRepository, times(1)).findById(excludeId);
+        verify(intervieweeRepository, never()).existsByPhoneNumber(phoneNumber);
+    }
+
+    @Test
+    void getIntervieweeByPhone_ShouldThrowNotFoundException_WhenExcludedIntervieweeNotFound() {
+        String phoneNumber = "1234567890";
+        UUID excludeId = UUID.randomUUID();
+
+        when(intervieweeRepository.findById(excludeId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> intervieweeService.getIntervieweeByPhone(phoneNumber, excludeId));
+        verify(intervieweeRepository, times(1)).findById(excludeId);
+        verify(intervieweeRepository, never()).existsByPhoneNumber(phoneNumber);
+    }
+
+    @Test
+    void getIntervieweeByEmail_ShouldReturnFalse_WhenEmailBelongsToExcludedId() {
+        String email = "test@example.com";
+        UUID excludeId = validId;
+
+        when(intervieweeRepository.findById(excludeId)).thenReturn(Optional.of(mockInterviewee));
+
+        Boolean result = intervieweeService.getIntervieweeByEmail(email, excludeId);
+
+        assertFalse(result);
+        verify(intervieweeRepository, times(1)).findById(excludeId);
+        verify(intervieweeRepository, never()).existsByEmail(email);
+    }
+
+    @Test
+    void getIntervieweeByEmail_ShouldThrowNotFoundException_WhenExcludedIntervieweeNotFound() {
+        String email = "test@example.com";
+        UUID excludeId = UUID.randomUUID();
+
+        when(intervieweeRepository.findById(excludeId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> intervieweeService.getIntervieweeByEmail(email, excludeId));
+        verify(intervieweeRepository, times(1)).findById(excludeId);
+        verify(intervieweeRepository, never()).existsByEmail(email);
+    }
+
+    @Test
+    void getIntervieweeByPhone_ShouldReturnTrue_WhenPhoneNumberExists() {
+        String phoneNumber = "1234567890";
+
+        // Test with null excludeId
+        when(intervieweeRepository.existsByPhoneNumber(phoneNumber)).thenReturn(true);
+        Boolean result = intervieweeService.getIntervieweeByPhone(phoneNumber, null);
+        assertTrue(result);
+        verify(intervieweeRepository, times(1)).existsByPhoneNumber(phoneNumber);
+    }
+
+    @Test
+    void getIntervieweeByPhone_ShouldReturnFalse_WhenPhoneNumberDoesNotExist() {
+        String phoneNumber = "1234567890";
+
+        // Test with null excludeId
+        when(intervieweeRepository.existsByPhoneNumber(phoneNumber)).thenReturn(false);
+        Boolean result = intervieweeService.getIntervieweeByPhone(phoneNumber, null);
+        assertFalse(result);
+        verify(intervieweeRepository, times(1)).existsByPhoneNumber(phoneNumber);
+    }
+
+    @Test
+    void getIntervieweeByEmail_ShouldReturnTrue_WhenEmailExists() {
+        String email = "test@example.com";
+
+        // Test with null excludeId
+        when(intervieweeRepository.existsByEmail(email)).thenReturn(true);
+        Boolean result = intervieweeService.getIntervieweeByEmail(email, null);
+        assertTrue(result);
+        verify(intervieweeRepository, times(1)).existsByEmail(email);
+    }
+
+    @Test
+    void getIntervieweeByEmail_ShouldReturnFalse_WhenEmailDoesNotExist() {
+        String email = "test@example.com";
+
+        // Test with null excludeId
+        when(intervieweeRepository.existsByEmail(email)).thenReturn(false);
+        Boolean result = intervieweeService.getIntervieweeByEmail(email, null);
+        assertFalse(result);
+        verify(intervieweeRepository, times(1)).existsByEmail(email);
+    }
 }

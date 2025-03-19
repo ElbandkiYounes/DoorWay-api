@@ -45,6 +45,8 @@ public class InterviewerServiceImplTest {
     private InterviewerPayload payload;
     private Interviewer interviewer;
     private Role role;
+    private Interviewer exludedInterviewer;
+    private UUID excludeId;
 
     @BeforeEach
     void setUp() {
@@ -67,6 +69,13 @@ public class InterviewerServiceImplTest {
         role = new Role();
         role.setId(1L);
         role.setName("Interviewer");
+
+        excludeId = UUID.randomUUID();
+        exludedInterviewer = Interviewer.builder()
+                .id(excludeId)
+                .email("test@example.com")
+                .phoneNumber("1234567890")
+                .build();
     }
 
     @Test
@@ -364,5 +373,60 @@ public class InterviewerServiceImplTest {
 
         assertEquals("Interviewer not found with ID: " + id, exception.getMessage());
         verify(interviewerRepository, never()).deleteById(id);
+    }
+
+    @Test
+    void getInterviewerByEmail_ShouldReturnTrue_WhenEmailExists() {
+        when(interviewerRepository.existsByEmail("test@example.com")).thenReturn(true);
+
+        Boolean result = interviewerService.getInterviewerByEmail("test@example.com", null);
+
+        assertTrue(result);
+        verify(interviewerRepository, times(1)).existsByEmail("test@example.com");
+    }
+
+    @Test
+    void getInterviewerByEmail_ShouldReturnFalse_WhenEmailDoesNotExist() {
+        when(interviewerRepository.existsByEmail("test@example.com")).thenReturn(false);
+
+        Boolean result = interviewerService.getInterviewerByEmail("test@example.com", null);
+
+        assertFalse(result);
+        verify(interviewerRepository, times(1)).existsByEmail("test@example.com");
+    }
+
+    @Test
+    void getInterviewerByEmail_ShouldThrowNotFoundException_WhenExcludeIdNotFound() {
+        when(interviewerRepository.findById(excludeId)).thenReturn(Optional.empty());
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                interviewerService.getInterviewerByEmail("test@example.com", excludeId));
+
+        assertEquals("Interviewer not found", exception.getMessage());
+        verify(interviewerRepository, times(1)).findById(excludeId);
+        verify(interviewerRepository, never()).existsByEmail(anyString());
+    }
+
+    @Test
+    void getInterviewerByPhone_ShouldReturnFalse_WhenPhoneNumberMatchesExcludeId() {
+        when(interviewerRepository.findById(excludeId)).thenReturn(Optional.of(interviewer));
+
+        Boolean result = interviewerService.getInterviewerByPhone("1234567890", excludeId);
+
+        assertFalse(result);
+        verify(interviewerRepository, times(1)).findById(excludeId);
+        verify(interviewerRepository, never()).existsByPhoneNumber(anyString());
+    }
+
+    @Test
+    void getInterviewerByPhone_ShouldThrowNotFoundException_WhenExcludeIdNotFound() {
+        when(interviewerRepository.findById(excludeId)).thenReturn(Optional.empty());
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                interviewerService.getInterviewerByPhone("1234567890", excludeId));
+
+        assertEquals("Interviewer not found", exception.getMessage());
+        verify(interviewerRepository, times(1)).findById(excludeId);
+        verify(interviewerRepository, never()).existsByPhoneNumber(anyString());
     }
 }

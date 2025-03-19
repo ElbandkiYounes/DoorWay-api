@@ -103,6 +103,30 @@ public class InterviewerServiceImpl implements InterviewerService {
         interviewerRepository.deleteById(id);
     }
 
+    @Override
+    public Boolean getInterviewerByEmail(String email, UUID excludeId) {
+        if (excludeId != null) {
+            Interviewer interviewer = interviewerRepository.findById(excludeId)
+                    .orElseThrow(() -> new NotFoundException("Interviewer not found"));
+            if (interviewer.getEmail().equals(email)) {
+                return false;
+            }
+        }
+        return interviewerRepository.existsByEmail(email);
+    }
+
+    @Override
+    public Boolean getInterviewerByPhone(String phoneNumber, UUID excludeId) {
+        if (phoneNumber != null) {
+            Interviewer interviewer = interviewerRepository.findById(excludeId)
+                    .orElseThrow(() -> new NotFoundException("Interviewer not found"));
+            if (interviewer.getPhoneNumber().equals(phoneNumber)) {
+                return false;
+            }
+        }
+        return interviewerRepository.existsByPhoneNumber(phoneNumber);
+    }
+
     // Helper method to validate the image
     private void validateImage(MultipartFile image) {
         // Validate image size
