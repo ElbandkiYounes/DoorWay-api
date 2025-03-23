@@ -43,7 +43,7 @@ public class InterviewingProcess {
     @CreatedDate
     private LocalDateTime createdAt;
 
-        @JsonProperty("intervieweeId")
+    @JsonProperty("intervieweeId")
     public UUID getIntervieweeId() {
         return interviewee.getId();
     }

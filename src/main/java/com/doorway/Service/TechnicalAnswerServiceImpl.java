@@ -12,6 +12,7 @@ import com.doorway.Service.Interface.TechnicalQuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -50,9 +51,6 @@ public class TechnicalAnswerServiceImpl implements TechnicalAnswerService {
         TechnicalAnswer existingAnswer = getTechnicalAnswerById(technicalAnswerId);
         TechnicalQuestion technicalQuestion = technicalQuestionService.getTechnicalQuestion(technicalQuestionId);
         Interview interview = interviewService.getInterviewById(interviewId);
-
-
-
         return technicalAnswerRepository.save(technicalAnswerPayload.toEntity(existingAnswer));
     }
 
@@ -66,6 +64,15 @@ public class TechnicalAnswerServiceImpl implements TechnicalAnswerService {
     public TechnicalAnswer getTechnicalAnswerById(Long technicalAnswerId) {
         return technicalAnswerRepository.findById(technicalAnswerId)
                 .orElseThrow(() -> new NotFoundException("Technical Answer not found"));
+    }
+
+    @Override
+    public List<TechnicalAnswer> getTechnicalAnswersByInterviewId(UUID interviewId) {
+        Interview interview = interviewService.getInterviewById(interviewId);
+        if (interview == null) {
+            throw new NotFoundException("Interview not found");
+        }
+        return technicalAnswerRepository.findByInterviewId(interviewId);
     }
 
 

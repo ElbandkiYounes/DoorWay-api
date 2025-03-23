@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.*;
 
@@ -24,6 +26,7 @@ public class Interviewee {
     private String phoneNumber;
     private String password;
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private School school;
 
     @OneToMany(mappedBy = "interviewee", cascade = CascadeType.ALL, orphanRemoval = true)

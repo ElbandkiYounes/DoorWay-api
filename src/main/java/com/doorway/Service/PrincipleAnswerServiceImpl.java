@@ -12,6 +12,7 @@ import com.doorway.Service.Interface.InterviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -64,5 +65,14 @@ public class PrincipleAnswerServiceImpl implements PrincipleAnswerService {
     public PrincipleAnswer getPrincipleAnswerById(Long id) {
         return principleAnswerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("PrincipleAnswer not found"));
+    }
+
+    @Override
+    public List<PrincipleAnswer> getPrincipleAnswersByInterviewId(UUID interviewId) {
+        Interview interview = interviewService.getInterviewById(interviewId);
+        if (interview == null) {
+            throw new NotFoundException("Interview not found");
+        }
+        return principleAnswerRepository.findByInterviewId(interviewId);
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -52,6 +53,11 @@ public class TechnicalAnswerController {
     public ResponseEntity<TechnicalAnswer> getTechnicalAnswerById(@PathVariable Long technicalAnswerId) {
         TechnicalAnswer technicalAnswer = technicalAnswerService.getTechnicalAnswerById(technicalAnswerId);
         return ResponseEntity.ok(technicalAnswer);
+    }
+
+    @GetMapping("/interview/{interviewId}")
+    public ResponseEntity<List<TechnicalAnswer>> getTechnicalAnswersByInterviewId(@PathVariable UUID interviewId) {
+        return ResponseEntity.ok(technicalAnswerService.getTechnicalAnswersByInterviewId(interviewId));
     }
 
 

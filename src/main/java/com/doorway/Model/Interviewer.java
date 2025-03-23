@@ -3,6 +3,8 @@ package com.doorway.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +31,7 @@ public class Interviewer {
     private String password;
     @ManyToOne
     @JoinColumn(name = "role_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Role role;
 
     @JsonIgnore

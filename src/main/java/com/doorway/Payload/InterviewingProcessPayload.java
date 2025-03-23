@@ -16,7 +16,6 @@ import lombok.*;
 @Builder
 public class InterviewingProcessPayload {
 
-    @NotBlank(message = "Feedback is mandatory")
     private String feedback;
 
     @Builder.Default
