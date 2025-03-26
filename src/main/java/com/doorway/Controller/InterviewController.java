@@ -55,6 +55,13 @@ public class InterviewController {
         return new ResponseEntity<>(interviews, HttpStatus.OK);
     }
 
+    //Get all interviews
+    @GetMapping("/interviews")
+    public ResponseEntity<List<Interview>> getAllInterviews() {
+        List<Interview> interviews = interviewService.getAllInterviews();
+        return new ResponseEntity<>(interviews, HttpStatus.OK);
+    }
+
     // Update an existing interview
     @PutMapping("/interviewee/{intervieweeId}/interviewing-process/{interviewingProcessId}/interviews/{id}")
     public ResponseEntity<Interview> updateInterview(
@@ -67,7 +74,6 @@ public class InterviewController {
 
         return new ResponseEntity<>(updatedInterview, HttpStatus.OK);
     }
-
 
     // Delete an interview by its ID
     @DeleteMapping("/interviews/{interviewId}")

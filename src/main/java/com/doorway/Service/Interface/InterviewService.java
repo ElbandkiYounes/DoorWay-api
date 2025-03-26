@@ -14,6 +14,8 @@ public interface InterviewService {
     Interview updateInterview(UUID interviewId, UUID intervieweeId, UUID processId, InterviewPayload payload);
     Interview getInterviewById(UUID interviewId);
 
+    List<Interview> getAllInterviews();
+
     List<Interview> getInterviewsByProcess(UUID intervieweeId, UUID processId);
 
     List<Interview> getInterviewsByInterviewer(UUID interviewerId);
