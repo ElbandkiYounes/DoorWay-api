@@ -24,7 +24,6 @@ public class Interviewee {
     private String email;
     private Date dateOfBirth;
     private String phoneNumber;
-    private String password;
     @ManyToOne
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private School school;

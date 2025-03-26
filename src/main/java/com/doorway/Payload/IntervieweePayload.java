@@ -31,13 +31,6 @@ public class IntervieweePayload {
     @Pattern(regexp = "^(\\+\\d{1,3})?\\d{10}$", message = "Invalid phone number format. Expected format: +<country_code>XXXXXXXXXX or XXXXXXXXXX.")
     private String phoneNumber;
 
-    @NotBlank(message = "Password is mandatory")
-    @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-            message = "Password must be at least 8 characters long, include uppercase, lowercase, digit, and special character"
-    )
-    private String password;
-
     @NotNull(message = "School is mandatory")
     private Long schoolId;
 
@@ -47,7 +40,6 @@ public class IntervieweePayload {
                 .email(email)
                 .dateOfBirth(dateOfBirth)
                 .phoneNumber(phoneNumber)
-                .password(password)
                 .school(school)
                 .profilePicture(image.getBytes())
                 .resume(resume.getBytes())
@@ -59,7 +51,6 @@ public class IntervieweePayload {
         interviewee.setEmail(email);
         interviewee.setDateOfBirth(dateOfBirth);
         interviewee.setPhoneNumber(phoneNumber);
-        interviewee.setPassword(password);
         interviewee.setSchool(school);
         interviewee.setProfilePicture(image.getBytes());
         interviewee.setResume(resume.getBytes());
