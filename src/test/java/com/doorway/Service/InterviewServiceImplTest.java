@@ -325,4 +325,16 @@ class InterviewServiceImplTest {
         verify(interviewRepository, times(1)).findById(interviewId);
         verify(interviewRepository, never()).save(any());
     }
+
+    @Test
+    void getAllInterviews_ShouldReturnAllInterviews() {
+        List<Interview> interviews = List.of(new Interview(), new Interview());
+        when(interviewRepository.findAll()).thenReturn(interviews);
+
+        List<Interview> result = interviewService.getAllInterviews();
+
+        assertNotNull(result);
+        assertEquals(interviews, result);
+        verify(interviewRepository, times(1)).findAll();
+    }
 }

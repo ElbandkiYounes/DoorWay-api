@@ -20,18 +20,20 @@ public class Interviewee {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+
     private String name;
     private String email;
     private Date dateOfBirth;
     private String phoneNumber;
+
     @ManyToOne
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private School school;
 
-    @OneToMany(mappedBy = "interviewee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "interviewee", fetch = FetchType.LAZY)
     @Builder.Default
     @JsonIgnore
-    private List<InterviewingProcess> interviewingProcesses = Collections.emptyList();
+    private List<InterviewingProcess> interviewingProcesses = new ArrayList<>();
 
     @Column(columnDefinition = "BYTEA")
     @Builder.Default
@@ -48,4 +50,3 @@ public class Interviewee {
                 .orElse(null);
     }
 }
-
