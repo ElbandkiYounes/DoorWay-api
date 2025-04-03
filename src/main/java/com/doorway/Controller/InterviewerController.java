@@ -60,7 +60,7 @@ public class InterviewerController {
     @PutMapping("/{id}")
     public ResponseEntity<Interviewer> updateInterviewer(
             @PathVariable UUID id,
-            @Valid @RequestPart("payload") InterviewerPayload payload, // Ensure @Valid is applied
+            @Valid @RequestPart("payload") InterviewerPayload payload,
             @RequestPart("image") MultipartFile image) {
         Interviewer interviewer = interviewerService.updateInterviewer(id, payload, image);
         return ResponseEntity.ok(interviewer);
