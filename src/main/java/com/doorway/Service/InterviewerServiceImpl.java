@@ -9,6 +9,7 @@ import com.doorway.Payload.InterviewerPayload;
 import com.doorway.Repository.InterviewerRepository;
 import com.doorway.Service.Interface.InterviewerService;
 import com.doorway.Service.Interface.RoleService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,10 +25,12 @@ public class InterviewerServiceImpl implements InterviewerService {
 
     private final InterviewerRepository interviewerRepository;
     private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
 
-    public InterviewerServiceImpl(InterviewerRepository interviewerRepository, RoleService roleService) {
+    public InterviewerServiceImpl(InterviewerRepository interviewerRepository, RoleService roleService, PasswordEncoder passwordEncoder) {
         this.interviewerRepository = interviewerRepository;
         this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Create Interviewer
@@ -49,6 +52,7 @@ public class InterviewerServiceImpl implements InterviewerService {
 
         try {
             Interviewer interviewer = payload.toEntity(image, role);
+            interviewer.setPassword(passwordEncoder.encode(interviewer.getPassword()));
             return interviewerRepository.save(interviewer);
         } catch (IOException e) {
             throw new FileException("Failed to process the image: " + e.getMessage());
