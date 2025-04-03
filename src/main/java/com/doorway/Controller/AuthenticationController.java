@@ -4,7 +4,6 @@ import com.doorway.Model.Interviewer;
 import com.doorway.Payload.LoginPayload;
 import com.doorway.Payload.LoginResponse;
 import com.doorway.Service.AuthenticationService;
-import com.doorway.Service.Interface.InterviewerService;
 import com.doorway.Service.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
