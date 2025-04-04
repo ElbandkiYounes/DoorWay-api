@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface PrincipleQuestionRepository extends JpaRepository<PrincipleQuestion, Long> {
     List<PrincipleQuestion> findByPrinciple(ExcellencePrinciple principle);
+    PrincipleQuestion findByQuestion(String question);
 }

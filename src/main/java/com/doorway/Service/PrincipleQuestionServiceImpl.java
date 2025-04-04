@@ -1,5 +1,6 @@
 package com.doorway.Service;
 
+import com.doorway.Exception.ConflictException;
 import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.ExcellencePrinciple;
 import com.doorway.Model.PrincipleQuestion;
@@ -37,6 +38,11 @@ public class PrincipleQuestionServiceImpl implements PrincipleQuestionService {
 
     @Override
     public PrincipleQuestion addPrincipleQuestion(PrincipleQuestionPayload principleQuestionPayload) {
+        // Check if the question already exists
+        PrincipleQuestion existingQuestion = principleQuestionRepository.findByQuestion(principleQuestionPayload.getQuestion());
+        if (existingQuestion != null) {
+            throw new ConflictException("PrincipleQuestion already exists" );
+        }
         PrincipleQuestion principleQuestion = principleQuestionPayload.toEntity();
         return principleQuestionRepository.save(principleQuestion);
     }

@@ -1,5 +1,6 @@
 package com.doorway.Service;
 
+import com.doorway.Exception.ConflictException;
 import com.doorway.Exception.NotFoundException;
 import com.doorway.Model.TechnicalQuestion;
 import com.doorway.Payload.TechnicalQuestionPayload;
@@ -18,6 +19,11 @@ public class TechnicalQuestionServiceImpl implements TechnicalQuestionService {
     }
 
     public TechnicalQuestion addTechnicalQuestion(TechnicalQuestionPayload technicalQuestionPayload) {
+        // Check if the question already exists
+        TechnicalQuestion existingQuestion = technicalQuestionRepository.findByQuestion(technicalQuestionPayload.getQuestion());
+        if (existingQuestion != null) {
+            throw new ConflictException("Technical Question already exists");
+        }
         return technicalQuestionRepository.save(technicalQuestionPayload.toEntity());
     }
 
