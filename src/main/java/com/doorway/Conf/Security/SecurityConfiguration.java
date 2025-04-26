@@ -38,6 +38,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/api/schools").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/interviewers/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 

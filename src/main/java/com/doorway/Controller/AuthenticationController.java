@@ -26,9 +26,13 @@ public class AuthenticationController {
 
         String jwtToken = jwtService.generateToken(authenticatedUser);
 
+        // Get the role name if available
+        String roleName = authenticatedUser.getRole() != null ? authenticatedUser.getRole().getName() : null;
+
         LoginResponse loginResponse = LoginResponse.builder()
                 .token(jwtToken)
                 .expiresIn(jwtService.getExpirationTime())
+                .role(roleName)
                 .build();
 
         return ResponseEntity.ok(loginResponse);
@@ -39,4 +43,3 @@ public class AuthenticationController {
         return ResponseEntity.ok(jwtService.getMe(token));
     }
 }
-
