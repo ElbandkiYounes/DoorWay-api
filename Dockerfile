@@ -1,14 +1,20 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:11-jre-slim
+# Multi-stage build
 
-# Set the working directory in the container
+# Stage 1: Build
+FROM maven:3.9-eclipse-temurin-23 AS build
 WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Copy the project JAR file into the container at /app
-COPY target/your-app.jar /app/your-app.jar
-
-# Make port 8080 available to the world outside this container
+# Stage 2: Runtime
+FROM eclipse-temurin:23-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/Doorway-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 
-# Run the JAR file
-ENTRYPOINT ["java", "-jar", "your-app.jar"]
+# Accept profile as environment variable, default to 'docker'
+ENV SPRING_PROFILES_ACTIVE=docker
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

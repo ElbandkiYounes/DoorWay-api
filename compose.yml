@@ -1,34 +1,51 @@
-version: '3.7'
-
 services:
   postgres:
-    image: 'postgres:latest'
+    image: postgres:17-alpine  # Use specific version to avoid upgrade issues
+    container_name: postgres-db
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: secret
     ports:
-      - '5432:5432'
-    networks:
-      custom_network:
-        ipv4_address: 172.20.0.2
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql  # Changed for PostgreSQL 18+ compatibility
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     container_name: pgadmin4_container
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:latest
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
       - "5050:80"
-    networks:
-      custom_network:
-        ipv4_address: 172.20.0.3
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Removed profiles - will now auto-start with Spring Boot
 
-networks:
-  custom_network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
+  doorway-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: doorwayapi:latest
+    container_name: doorway-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    restart: on-failure
+    profiles:
+      - docker
+
+volumes:
+  postgres_data:
